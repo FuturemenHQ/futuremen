@@ -7,7 +7,7 @@ DEEPSEEK_KEY.txt
 
 # Private data
 memory/
-venardi-calendar.json
+/venardi-calendar.json
 tajnet-registry.json
 
 # Generated / cache
