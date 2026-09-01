@@ -31,6 +31,12 @@ td{padding:.5rem;border-bottom:1px solid #1d1d2e;vertical-align:top}
 .status.pending{background:#e0a05022;color:var(--warn);border:1px solid #e0a05055}
 .status.done{background:#7ecb8a22;color:var(--ok);border:1px solid #7ecb8a55}
 .status.standby{background:#6f6f8622;color:var(--muted);border:1px solid #6f6f8655}
+.status.active{background:#7ecb8a22;color:var(--ok);border:1px solid #7ecb8a55}
+.status.inactive{background:#6f6f8622;color:var(--muted);border:1px solid #6f6f8655}
+.status.core{background:#c9a96e22;color:var(--gold);border:1px solid #c9a96e55}
+.status.recruited{background:#7ecb8a22;color:var(--ok);border:1px solid #7ecb8a55}
+.status.affiliate{background:#6f6f8622;color:var(--muted);border:1px solid #6f6f8655}
+.status.other{background:#e0a05022;color:var(--warn);border:1px solid #e0a05055}
 .meter{height:10px;background:#0e0e15;border-radius:99px;overflow:hidden;border:1px solid var(--border)}
 .meter > div{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .4s}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
@@ -70,6 +76,22 @@ footer a{color:var(--gold);text-decoration:none}
       <tbody id="calBody"></tbody>
     </table></div>
     <div id="calEmpty" class="empty">No tasks yet — add your first one.</div>
+  </div>
+
+  <!-- ============ AGENTS ============ -->
+  <div class="card">
+    <h2>🤖 Agents</h2>
+    <p class="sub">Your team. Categories are yours to define (e.g. core / recruited / affiliates) — the menu is blank.</p>
+    <div class="row">
+      <button class="btn primary" onclick="openAgent()">+ New agent</button>
+      <button class="btn" onclick="exportJson({agents:agents},'agents.json')">⬇ Export JSON</button>
+      <label style="flex:0;margin:0"><input type="file" id="agFile" accept=".json" style="display:none" onchange="importAgents(this)"><span class="btn" onclick="document.getElementById('agFile').click()">⬆ Import JSON</span></label>
+    </div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Name</th><th>Category</th><th>Role</th><th>Status</th><th></th></tr></thead>
+      <tbody id="agBody"></tbody>
+    </table></div>
+    <div id="agEmpty" class="empty">No agents yet — add your first one.</div>
   </div>
 
   <!-- ============ BAROMETER ============ -->
@@ -135,6 +157,38 @@ footer a{color:var(--gold);text-decoration:none}
 
 <div id="toast"></div>
 
+<!-- ============ AGENT MODAL ============ -->
+<div class="modal" id="agentModal">
+  <div class="modal-box">
+    <h2 style="margin-top:0;color:var(--gold2)">New agent</h2>
+    <label>Name</label>
+    <input id="aName" placeholder="Agent name">
+    <label>Category</label>
+    <select id="aCat">
+      <option value="core">core — HQ agents</option>
+      <option value="recruited">recruited — associated agents</option>
+      <option value="affiliate">affiliate — external partners</option>
+      <option value="other">other</option>
+    </select>
+    <label>Role</label>
+    <input id="aRole" placeholder="Role / specialty">
+    <label>Status</label>
+    <select id="aStatus">
+      <option value="active">active</option>
+      <option value="inactive">inactive</option>
+      <option value="standby">standby</option>
+    </select>
+    <label>Note (optional)</label>
+    <textarea id="aNote" placeholder="Context…"></textarea>
+    <div class="row" style="margin-top:1rem">
+      <button class="btn primary" onclick="addAgent()">Add</button>
+      <button class="btn" onclick="closeAgentModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
 <script>
 "use strict";
 /* ============================================================
@@ -171,8 +225,9 @@ const DEFAULT_BAROMETER = {
 
 let calendar = JSON.parse(JSON.stringify(DEFAULT_CALENDAR));
 let barometer = JSON.parse(JSON.stringify(DEFAULT_BAROMETER));
+let agents = [];
 
-const LS_CAL = "futuremen_calendar", LS_BARO = "futuremen_barometer", LS_NOTES = "futuremen_notes";
+const LS_CAL = "futuremen_calendar", LS_BARO = "futuremen_barometer", LS_AG = "futuremen_agents", LS_NOTES = "futuremen_notes";
 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
@@ -181,8 +236,9 @@ function toast(m){const t=document.getElementById("toast");t.textContent=m;t.cla
 function loadAll(){
   try{const c=localStorage.getItem(LS_CAL); if(c) calendar=JSON.parse(c);}catch(e){}
   try{const b=localStorage.getItem(LS_BARO); if(b) barometer=JSON.parse(b);}catch(e){}
+  try{const a=localStorage.getItem(LS_AG); if(a) agents=JSON.parse(a);}catch(e){}
   document.getElementById("notes").value = localStorage.getItem(LS_NOTES)||"";
-  renderCalendar(); renderBarometer();
+  renderCalendar(); renderBarometer(); renderAgents();
 }
 function saveAll(){ try{localStorage.setItem(LS_CAL,JSON.stringify(calendar));}catch(e){} }
 
@@ -238,6 +294,74 @@ function loadCalendar(){
   calendar=JSON.parse(JSON.stringify(DEFAULT_CALENDAR));
   try{const c=localStorage.getItem(LS_CAL); if(c) calendar=JSON.parse(c);}catch(e){}
   renderCalendar(); toast("Reloaded");
+}
+
+// ---- agents ----
+function renderAgents(){
+  const tbody=document.getElementById("agBody");
+  tbody.innerHTML="";
+  document.getElementById("agEmpty").style.display = agents.length ? "none" : "block";
+  agents.forEach(a=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = "<td><b>"+esc(a.name)+"</b>"+(a.note?"<br><span style='color:var(--muted);font-size:.8rem'>"+esc(a.note)+"</span>":"")+"</td>"
+      + "<td><span class='status "+esc(a.category||"core")+"'>"+esc(a.category||"core")+"</span></td>"
+      + "<td>"+esc(a.role||"—")+"</td>"
+      + "<td><span class='status "+esc(a.status||"active")+"'>"+esc(a.status||"active")+"</span></td>"
+      + "<td style='text-align:right'><button class='btn' onclick='toggleAgent("+a.id+")'>"+(a.status==="inactive"?"↩":"⏸")+"</button> "
+      + "<button class='btn danger' onclick='delAgent("+a.id+")'>✕</button></td>";
+    tbody.appendChild(tr);
+  });
+}
+function openAgent(){
+  document.getElementById("agentModal").classList.add("open");
+  document.getElementById("aName").value=""; document.getElementById("aCat").value="core";
+  document.getElementById("aRole").value=""; document.getElementById("aStatus").value="active";
+  document.getElementById("aNote").value="";
+  document.getElementById("aName").focus();
+}
+function closeAgentModal(){document.getElementById("agentModal").classList.remove("open");}
+function addAgent(){
+  const name=document.getElementById("aName").value.trim();
+  if(!name){toast("Name required");return;}
+  agents.push({
+    id: Date.now(),
+    name: name,
+    category: document.getElementById("aCat").value,
+    role: document.getElementById("aRole").value.trim(),
+    status: document.getElementById("aStatus").value,
+    note: document.getElementById("aNote").value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  try{localStorage.setItem(LS_AG,JSON.stringify(agents));}catch(e){}
+  renderAgents(); closeAgentModal(); toast("Agent added");
+}
+function toggleAgent(id){
+  const a=agents.find(x=>x.id===id); if(!a) return;
+  a.status = a.status==="inactive" ? "active" : "inactive";
+  try{localStorage.setItem(LS_AG,JSON.stringify(agents));}catch(e){}
+  renderAgents();
+}
+function delAgent(id){
+  agents = agents.filter(x=>x.id!==id);
+  try{localStorage.setItem(LS_AG,JSON.stringify(agents));}catch(e){}
+  renderAgents(); toast("Agent removed");
+}
+function importAgents(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const data=JSON.parse(rd.result);
+      const list = Array.isArray(data) ? data : (data.agents||[]);
+      if(!Array.isArray(list)) throw new Error("bad shape");
+      list.forEach(a=>{ if(!a.id) a.id=Date.now()+Math.floor(Math.random()*999); });
+      agents = agents.concat(list);
+      try{localStorage.setItem(LS_AG,JSON.stringify(agents));}catch(e){}
+      renderAgents(); toast(list.length+" agent(s) imported");
+    }catch(e){toast("Invalid JSON");}
+  };
+  rd.readAsText(f);
+  input.value="";
 }
 
 // ---- barometer ----
