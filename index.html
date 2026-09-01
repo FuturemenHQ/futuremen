@@ -49,6 +49,13 @@ footer a{color:var(--gold);text-decoration:none}
 .modal-box{max-width:520px;margin:2rem auto;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:1.4rem}
 #toast{position:fixed;bottom:1rem;right:1rem;background:var(--panel);border:1px solid var(--ok);color:var(--ok);border-radius:10px;padding:.7rem 1.1rem;font-size:.85rem;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
 #toast.show{opacity:1}
+.chat{background:#0e0e15;border:1px solid var(--border);border-radius:10px;padding:.7rem;max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:.5rem}
+.msg{max-width:85%;padding:.5rem .8rem;border-radius:10px;font-size:.85rem;white-space:pre-wrap;word-break:break-word}
+.msg.user{background:#c9a96e22;border:1px solid #c9a96e55;color:var(--text);align-self:flex-end;border-bottom-right-radius:2px}
+.msg.agent{background:#14141c;border:1px solid var(--border);color:var(--text);align-self:flex-start;border-bottom-left-radius:2px}
+.msg.sys{background:transparent;border:1px dashed #6f6f8655;color:var(--muted);font-size:.75rem;align-self:center;text-align:center;max-width:100%}
+.msg .who{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;color:var(--gold);margin-bottom:.2rem}
+.msg.user .who{color:var(--ok)}
 </style>
 </head>
 <body>
@@ -155,12 +162,14 @@ footer a{color:var(--gold);text-decoration:none}
       </div>
       <div>
         <label>Chat with an agent</label>
-        <select id="aiAgent"></select>
-        <textarea id="aiPrompt" placeholder="Your message to the agent…" style="margin-top:.5rem"></textarea>
-        <div class="row" style="margin-top:.6rem">
-          <button class="btn primary" onclick="aiSend()">➤ Send</button>
+        <select id="aiAgent" onchange="updateAgentSys()"></select>
+        <label style="margin-top:.6rem">System prompt (auto-built from the agent)</label>
+        <textarea id="aiSys" style="min-height:70px" placeholder="System prompt…"></textarea>
+        <div id="aiChat" class="chat" style="margin-top:.6rem"></div>
+        <div class="row" style="margin-top:.5rem">
+          <textarea id="aiPrompt" placeholder="Your message to the agent…" style="flex:1;min-height:44px"></textarea>
+          <button class="btn primary" onclick="aiSend()" style="align-self:end">➤</button>
         </div>
-        <div id="aiOut" class="sub" style="margin-top:.6rem;white-space:pre-wrap;max-height:180px;overflow:auto"></div>
       </div>
     </div>
   </div>
@@ -453,11 +462,34 @@ function saveNotes(){
 }
 
 // ---- AI / BYOK ----
-const LS_AI = "futuremen_ai";
+const LS_AI = "futuremen_ai", LS_CHAT = "futuremen_chat";
+let chatHist = [];
 function aiModelValue(){
   const sel=document.getElementById("aiModel");
   if(sel.value==="__custom__") return document.getElementById("aiModelCustom").value.trim();
   return sel.value;
+}
+function systemPromptFor(agentName){
+  const a=agents.find(x=>x.name===agentName);
+  if(!a) return "You are a helpful assistant for a Futuremen workspace. Respond concisely.";
+  return "You are "+a.name+", "+(a.role||"agent")+" (category: "+(a.category||"core")+", status: "+(a.status||"active")+"). "
+    +(a.note?"Context: "+a.note+". ":"")
+    +"Respond in character, concise and direct.";
+}
+function updateAgentSys(){
+  document.getElementById("aiSys").value = systemPromptFor(document.getElementById("aiAgent").value);
+}
+function renderChat(){
+  const box=document.getElementById("aiChat");
+  box.innerHTML="";
+  chatHist.forEach(m=>{
+    const d=document.createElement("div");
+    d.className="msg "+m.role;
+    if(m.role==="sys"){ d.textContent="system prompt — "+m.content.slice(0,60)+"…"; }
+    else { d.innerHTML="<span class='who'>"+(m.role==="user"?"you":esc(m.agent||"agent"))+"</span>"+esc(m.content); }
+    box.appendChild(d);
+  });
+  box.scrollTop=box.scrollHeight;
 }
 function loadAi(){
   let cfg={base:"https://api.deepseek.com/v1",model:"deepseek-chat",key:""};
@@ -473,6 +505,8 @@ function loadAi(){
   const agSel=document.getElementById("aiAgent");
   agSel.innerHTML="<option value=''>— general assistant —</option>";
   agents.forEach(a=>{const o=document.createElement("option");o.value=a.name;o.textContent=a.name+(a.role?" ("+a.role+")":"");agSel.appendChild(o);});
+  try{const h=JSON.parse(localStorage.getItem(LS_CHAT)||"[]"); if(Array.isArray(h)) chatHist=h;}catch(e){}
+  updateAgentSys(); renderChat();
 }
 function saveAi(){
   const cfg={
@@ -493,23 +527,34 @@ function aiSend(){
   const base=(document.getElementById("aiBase").value.trim()||"https://api.deepseek.com/v1").replace(/\/$/,"");
   const model=aiModelValue()||"deepseek-chat";
   const agentName=document.getElementById("aiAgent").value;
+  const sys=document.getElementById("aiSys").value.trim()||systemPromptFor(agentName);
   const prompt=document.getElementById("aiPrompt").value.trim();
   if(!key){toast("Add your API key first (BYOK)");return;}
   if(!prompt){toast("Write a message");return;}
-  const out=document.getElementById("aiOut");
-  const agent=agents.find(a=>a.name===agentName);
-  const sys = agent
-    ? "You are "+agent.name+", "+(agent.role||"agent")+" (category: "+(agent.category||"core")+"). Respond in character, concise and direct."
-    : "You are a helpful assistant for a Futuremen workspace. Respond concisely.";
-  out.textContent="…";
+  const msgs=[{role:"system",content:sys}];
+  chatHist.filter(m=>m.role==="user"||m.role==="agent").forEach(m=>{msgs.push({role:m.role==="user"?"user":"assistant",content:m.content});});
+  msgs.push({role:"user",content:prompt});
+  chatHist.push({role:"user",content:prompt,agent:agentName||"you"});
+  try{localStorage.setItem(LS_CHAT,JSON.stringify(chatHist));}catch(e){}
+  renderChat();
+  document.getElementById("aiPrompt").value="";
   fetch(base+"/chat/completions",{
     method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
-    body:JSON.stringify({model:model,messages:[{role:"system",content:sys},{role:"user",content:prompt}],temperature:0.7})
+    body:JSON.stringify({model:model,messages:msgs,temperature:0.7})
   })
   .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
-  .then(d=>{out.textContent=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||JSON.stringify(d).slice(0,500);})
-  .catch(e=>{out.textContent="Error: "+e.message; toast("Request failed");});
+  .then(d=>{
+    const content=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||JSON.stringify(d).slice(0,500);
+    chatHist.push({role:"agent",content:content,agent:agentName||"assistant"});
+    try{localStorage.setItem(LS_CHAT,JSON.stringify(chatHist));}catch(e){}
+    renderChat();
+  })
+  .catch(e=>{
+    chatHist.push({role:"agent",content:"⚠ Error: "+e.message,agent:"system"});
+    try{localStorage.setItem(LS_CHAT,JSON.stringify(chatHist));}catch(e){}
+    renderChat();
+  });
 }
 
 // ---- import / export ----
