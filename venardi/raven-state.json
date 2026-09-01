@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-09-01T00:00:00.000Z",
+  "egregorePurity": 0.5,
+  "egregorePercent": 50,
+  "mandelaTension": "Moderate",
+  "divergence": "0%",
+  "timeline": "YOUR_TIMELINE",
+  "dateSimulee": "2026-09-01",
+  "ancre": "2026-09-01",
+  "barometer": {
+    "dateDebut": "1 September 2026",
+    "dateFin": "1 September 2026",
+    "ticks": 0,
+    "purity": 0.5,
+    "timelineActive": "Your timeline",
+    "lieu": "Your HQ",
+    "personnesSuivies": "—",
+    "statut": "—",
+    "note": "Blank barometer — sync it with your own world.",
+    "futuremenImpliques": "—"
+  },
+  "sources": [],
+  "_meta": { "source": "your-core.js", "syncedAt": "2026-09-01T00:00:00.000Z" }
+}

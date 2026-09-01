@@ -16,6 +16,8 @@ This public edition is meant for **other OpenClaw users** who want to build thei
 | `SOUL.md` | Personality & tone for your agent |
 | `IDENTITY.md` | Identity template (name, avatar, vibe) |
 | `IDEAS.md` | Idea backlog |
+| `venardi/` | **Blank Venardi framework** — calendar + barometer skeleton to build your own coordination/simulation layer |
+| `MEMORY.md` | Long-term memory template (fill it as you go) |
 
 ## Quick start
 
@@ -23,6 +25,7 @@ This public edition is meant for **other OpenClaw users** who want to build thei
 2. Edit `IDENTITY.md` — pick a name, an emoji, an avatar.
 3. Read `AGENTS.md` and adjust the rules to your own style.
 4. Open `futuremen.html` in a browser to see the dashboard.
+5. Build your own coordination layer from the blank `venardi/` framework (calendar + barometer).
 
 ### Core engine (optional)
 
