@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="planetes-api-base" content="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Futuremen — Dossier Inter-Temporel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>◈</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cyan:    #00f2fe;
+      --violet:  #7b2fff;
+      --pink:    #ff006e;
+      --gold:    #ffd966;
+      --accent:  #00ff87;
+      --dark:    #040a14;
+      --dark2:   #060814;
+      --card-bg: rgba(6, 18, 36, 0.88);
+      --border:  rgba(0, 245, 255, 0.15);
+      --text:    #c8dff0;
+      --muted:   #6a8fa8;
+      --radius: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--dark2);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 242, 254, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 254, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.10;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 14s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 500px; height: 500px; background: var(--cyan); top: -100px; left: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: var(--violet); bottom: 0; right: -50px; animation-delay: -5s; }
+    .orb-3 { width: 300px; height: 300px; background: var(--pink); top: 40%; left: 60%; animation-delay: -9s; opacity: 0.06; }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, 30px) scale(1.1); }
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 3rem;
+      background: rgba(4, 10, 20, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem;
+      letter-spacing: 0.25em;
+      color: var(--cyan);
+      text-decoration: none;
+      text-shadow: 0 0 20px var(--cyan);
+    }
+    .nav-logo span { color: var(--violet); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.3s;
+      cursor: pointer;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-burger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: transparent;
+      border: 1px solid var(--border, rgba(0,245,255,0.15));
+      border-radius: 4px;
+      padding: 8px 10px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .nav-burger span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--cyan, #00f2fe);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+    .nav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-status {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative; z-index: 2;
+      min-height: 70vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8rem 3rem 4rem;
+    }
+    .hero-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      color: var(--violet);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+    .hero-title {
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1.05;
+      font-family: 'Orbitron', monospace;
+    }
+    .hero-title .line-glow {
+      display: block;
+      color: var(--cyan);
+      text-shadow: 0 0 40px var(--cyan), 0 0 80px rgba(0, 242, 254, 0.3);
+    }
+    .hero-title .line-solid { display: block; color: #fff; }
+    .hero-title .line-accent { display: block; color: var(--violet); }
+    .hero-desc {
+      max-width: 600px;
+      font-size: 1.05rem;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 1.5rem;
+      line-height: 1.8;
+    }
+    .hero-actions { display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap; }
+
+    .btn {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.9rem 2rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    }
+    .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
+    .btn-cyan:hover { background: var(--cyan); color: var(--dark2); }
+    .btn-violet { border-color: var(--violet); color: var(--violet); }
+    .btn-violet:hover { background: var(--violet); color: #fff; }
+    .btn-accent { border-color: var(--accent); color: var(--accent); }
+    .btn-accent:hover { background: var(--accent); color: var(--dark2); }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      position: relative; z-index: 2;
+      display: flex; gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(4, 10, 20, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    .stat-item {
+      flex: 1;
+      padding: 1.5rem 2rem;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-value {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.8rem;
+      color: var(--cyan);
+      text-shadow: 0 0 15px var(--cyan);
+    }
+    .stat-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ─── SECTIONS ─── */
+    section {
+      position: relative; z-index: 2;
+      padding: 5rem 3rem;
+    }
+    .section-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.35em;
+      color: var(--violet);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+    }
+
+    /* ─── VENARDI PANEL ─── */
+    .venardi-panel {
+      background: rgba(6, 18, 36, 0.85);
+      border: 1px solid var(--border);
+      padding: 2.5rem;
+      margin-top: 2rem;
+      backdrop-filter: blur(12px);
+    }
+    .venardi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .venardi-box {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+    .venardi-box label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .venardi-box select,
+    .venardi-box input {
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      padding: 0.7rem 1rem;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      border-radius: var(--radius);
+    }
+    .venardi-box select option { background: var(--dark); }
+    .venardi-box input[type="range"] { padding: 0; accent-color: var(--cyan); }
+
+    .egregore-display {
+      font-family: 'Orbitron', monospace;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+    }
+    .egregore-display span { color: var(--cyan); font-size: 1.5rem; }
+
+    .egregore-bar {
+      height: 8px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 4px;
+      margin-top: 0.8rem;
+      overflow: hidden;
+    }
+    .egregore-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink), var(--gold), var(--cyan));
+      border-radius: 4px;
+      transition: width 0.5s;
+    }
+
+    .ticks-display {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+    .tick-btn {
+      font-family: 'Share Tech Mono', monospace;
+      padding: 0.3rem 0.7rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.75rem;
+    }
+    .tick-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .tick-btn.active { border-color: var(--violet); color: var(--violet); }
+
+    .hidden { display: none !important; }
+
+    /* ─── AGENT CARDS ─── */
+    .agent-section-title {
+      margin-top: 2.2rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--violet, #a78bfa);
+      border-bottom: 1px solid var(--border, rgba(0,245,255,0.15));
+      padding-bottom: 0.5rem;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+      margin-top: 1.5rem;
+    }
+    .agent-section-title + .cards-grid {
+      margin-top: 1rem;
+    }
+
+    .card {
+      position: relative;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      backdrop-filter: blur(12px);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,245,255,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 60px rgba(0,245,255,0.1), 0 0 0 1px rgba(0,245,255,0.25);
+    }
+    .card__topbar { height: 3px; width: 100%; }
+
+    .card__photo {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+    .card__photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    .card:hover .card__photo img { transform: scale(1.05); }
+    .card__photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, var(--dark2) 100%);
+    }
+    .card__badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.25em;
+      padding: 4px 10px;
+      text-transform: uppercase;
+    }
+
+    .card__body { padding: 22px 24px 28px; }
+    .card__name {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .card__id {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.5rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+    }
+    .card__role {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+    .card__desc {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 14px;
+      opacity: 0.85;
+    }
+    .card__meta {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 14px;
+    }
+    .card__meta-item {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      text-transform: uppercase;
+    }
+    .card__meta-item span { color: var(--text); font-weight: 600; }
+    .card__skills-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.35em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .card__skills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .skill-tag {
+      font-size: 0.68rem;
+      padding: 3px 10px;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .card__phenotype {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* Theme colors */
+    .theme-gold .card__topbar   { background: linear-gradient(90deg, var(--gold), transparent); }
+    .theme-gold .card__badge    { background: rgba(255,217,102,0.12); color: var(--gold); border: 1px solid rgba(255,217,102,0.3); }
+    .theme-gold .card__role     { background: rgba(255,217,102,0.1); color: var(--gold); }
+    .theme-gold .skill-tag      { background: rgba(255,217,102,0.07); color: var(--gold); border-color: rgba(255,217,102,0.25); }
+    .theme-gold .card__name     { text-shadow: 0 0 20px rgba(255,217,102,0.3); }
+
+    .theme-cyan .card__topbar   { background: linear-gradient(90deg, var(--cyan), transparent); }
+    .theme-cyan .card__badge    { background: rgba(0,242,254,0.12); color: var(--cyan); border: 1px solid rgba(0,242,254,0.3); }
+    .theme-cyan .card__role     { background: rgba(0,242,254,0.1); color: var(--cyan); }
+    .theme-cyan .skill-tag      { background: rgba(0,242,254,0.07); color: var(--cyan); border-color: rgba(0,242,254,0.25); }
+
+    .theme-violet .card__topbar { background: linear-gradient(90deg, var(--violet), transparent); }
+    .theme-violet .card__badge  { background: rgba(123,47,255,0.18); color: #c084fc; border: 1px solid rgba(123,47,255,0.4); }
+    .theme-violet .card__role   { background: rgba(123,47,255,0.12); color: #c084fc; }
+    .theme-violet .skill-tag    { background: rgba(123,47,255,0.08); color: #c084fc; border-color: rgba(123,47,255,0.3); }
+
+    .theme-rose .card__topbar   { background: linear-gradient(90deg, var(--pink), transparent); }
+    .theme-rose .card__badge    { background: rgba(255,0,110,0.12); color: var(--pink); border: 1px solid rgba(255,0,110,0.3); }
+    .theme-rose .card__role     { background: rgba(255,0,110,0.1); color: var(--pink); }
+    .theme-rose .skill-tag      { background: rgba(255,0,110,0.07); color: var(--pink); border-color: rgba(255,0,110,0.25); }
+
+    .theme-accent .card__topbar { background: linear-gradient(90deg, var(--accent), transparent); }
+    .theme-accent .card__badge  { background: rgba(0,255,135,0.12); color: var(--accent); border: 1px solid rgba(0,255,135,0.3); }
+    .theme-accent .card__role   { background: rgba(0,255,135,0.1); color: var(--accent); }
+    .theme-accent .skill-tag    { background: rgba(0,255,135,0.07); color: var(--accent); border-color: rgba(0,255,135,0.25); }
+
+    /* ─── TERMINAL ─── */
+    .terminal {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--cyan);
+      line-height: 2;
+      position: relative;
+      margin-top: 3rem;
+    }
+    .terminal::before {
+      content: '> VENARDI TERMINAL v2.4.1';
+      display: block;
+      font-size: 0.6rem;
+      color: var(--violet);
+      letter-spacing: 0.2em;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-line { display: flex; gap: 1rem; }
+    .terminal-prompt { color: var(--violet); }
+    .terminal-output { color: var(--muted); }
+    .cursor {
+      display: inline-block;
+      width: 8px; height: 1em;
+      background: var(--cyan);
+      vertical-align: text-bottom;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ─── LIGHTBOX ─── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(2, 6, 14, 0.92);
+      backdrop-filter: blur(10px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .lightbox.is-open { opacity: 1; pointer-events: all; }
+    .lightbox__img {
+      max-width: 100%;
+      max-height: 70vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 80px rgba(0,245,255,0.15);
+      border-radius: 4px;
+    }
+    .lightbox__caption {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.55rem; letter-spacing: 0.3em;
+      color: var(--cyan); text-transform: uppercase; opacity: 0.7;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    .lightbox__close {
+      position: absolute; top: 24px; right: 28px;
+      width: 38px; height: 38px;
+      border: 1px solid var(--border);
+      background: rgba(0,245,255,0.06);
+      color: var(--cyan); font-size: 1.2rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    .lightbox__inner {
+      display: flex;
+      gap: 1.5rem;
+      max-width: min(95vw, 1100px);
+      max-height: 85vh;
+      width: 100%;
+      height: 85vh;
+      align-items: stretch;
+    }
+    .lightbox__left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .lightbox__right {
+      width: 380px;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(2, 8, 18, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 0.8rem 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,242,254,0.04);
+      flex-shrink: 0;
+    }
+    .chat-header span { color: var(--gold); }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-height: 200px;
+    }
+    .chat-msg { display: flex; flex-direction: column; }
+    .chat-msg-user { align-items: flex-end; }
+    .chat-msg-agent { align-items: flex-start; }
+    .chat-msg-content {
+      max-width: 85%;
+      padding: 0.5rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+    .chat-msg-user .chat-msg-content {
+      background: rgba(0,242,254,0.1);
+      border: 1px solid rgba(0,242,254,0.2);
+      color: var(--text);
+      border-bottom-right-radius: 2px;
+    }
+    .chat-msg-agent .chat-msg-content {
+      background: rgba(123,47,255,0.1);
+      border: 1px solid rgba(123,47,255,0.2);
+      color: var(--text);
+      border-bottom-left-radius: 2px;
+    }
+    .chat-msg-content strong { color: var(--gold); }
+    .chat-msg-content em { color: var(--violet); }
+    .chat-msg-content code {
+      background: rgba(0,0,0,0.4);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+    }
+    .chat-msg-content a { color: var(--cyan); text-decoration: underline; }
+    .chat-input-area {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0.6rem;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.7rem;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      outline: none;
+    }
+    .chat-input:focus { border-color: var(--cyan); }
+    .chat-send {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border);
+      background: rgba(0,242,254,0.08);
+      color: var(--cyan);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .chat-send:hover {
+      background: rgba(0,242,254,0.2);
+      border-color: var(--cyan);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 2;
+      padding: 2.5rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(4, 10, 20, 0.9);
+    }
+    .footer-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+    }
+    .footer-copy {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55rem;
+      color: rgba(0,245,255,0.2);
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0.8rem 1.2rem; }
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(4, 10, 20, 0.98);
+        border-bottom: 1px solid var(--border, rgba(0,245,255,0.15));
+        padding: 1rem 1.5rem 1.5rem;
+        gap: 0.6rem;
+        z-index: 100;
+      }
+      .nav-links.open a { padding: 0.5rem 0; font-size: 0.85rem; }
+      .hero { padding: 6rem 1.5rem 3rem; }
+      .hero-title { font-size: clamp(1.6rem, 7vw, 2.6rem); }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .hero-actions .btn { text-align: center; }
+      section { padding: 3rem 1.5rem; }
+      .stats-bar { flex-wrap: wrap; }
+      .stat-item { flex: 1 1 45%; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .venardi-panel { padding: 1.5rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .lightbox__inner { flex-direction: column; max-height: 95vh; height: auto; }
+      .lightbox__right { width: 100%; min-width: unset; max-height: 40vh; }
+      .lightbox__img { max-height: 35vh; }
+      /* CID Explorer : masquer TXID sur tablette, recherche pleine largeur */
+      #cid-table th:nth-child(4), #cid-table td:nth-child(4) { display: none; }
+      #cid-search { width: 100%; }
+      #cid-filters { justify-content: center; }
+      .calendar-scroll { overflow-x: auto; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 0.7rem 1rem; }
+      .nav-logo { font-size: 1rem; }
+      .hero { padding: 5rem 1rem 2.5rem; }
+      .hero-tag { font-size: 0.5rem; letter-spacing: 0.2em; }
+      .hero-title { font-size: 1.5rem; }
+      .hero-desc { font-size: 0.85rem; }
+      .section-title { font-size: 1.1rem; }
+      section { padding: 2.5rem 1rem; }
+      .stats-bar { gap: 0.5rem; }
+      .stat-item { flex: 1 1 100%; padding: 0.6rem; }
+      /* CID Explorer : garder Date/Titre, masquer CID+TXID+Tags en très petit */
+      #cid-table th:nth-child(3), #cid-table td:nth-child(3),
+      #cid-table th:nth-child(5), #cid-table td:nth-child(5) { display: none; }
+      #cid-table { font-size: 0.75rem; }
+      #cid-table th, #cid-table td { padding: 6px 8px; }
+      #cid-search { font-size: 0.75rem; padding: 7px 10px; }
+      #cid-pager { flex-direction: column; gap: 0.4rem; }
+      #cid-pager button { width: 100%; }
+      .card { padding: 0.8rem; }
+      .lightbox__inner { padding: 0; }
+      .lightbox__right { max-height: 45vh; }
+      .chat-input-area { flex-wrap: wrap; }
+      .chat-input { flex: 1 1 100%; }
+      .metrics, .metric { gap: 0.8rem; }
+      .metric-value { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- ═══ NAV ═══ -->
+  <nav>
+    <a href="#" class="nav-logo">FUTURE<span>MEN</span></a>
+    <ul class="nav-links">
+      <li><a onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">01 / AGENTS</a></li>
+      <li><a onclick="document.getElementById('venardi').scrollIntoView({behavior:'smooth'})">02 / VENARDI</a></li>
+      <li><a onclick="document.getElementById('protocols').scrollIntoView({behavior:'smooth'})">03 / PROTOCOLES</a></li>
+      <li><a href="https://tajcoin.fr" target="_blank">04 / TAJCOIN</a></li>
+      <li><a href="https://k51qzi5uqu5diizqdlyx5fahlnepzat7wkxt2yyih7o3g5n1q3kztrb6lnrw7i.ipns.dweb.link/" target="_blank">05 / PHONOGRAPHE 🎵</a></li>
+      <li><a href="#reunions" onclick="document.getElementById('reunions').scrollIntoView({behavior:'smooth'})">06 / RÉUNIONS 🗓️</a></li>
+      <li><a href="#calendar" onclick="document.getElementById('calendar').scrollIntoView({behavior:'smooth'})">07 / TÂCHES 📋</a></li>
+    </ul>
+    <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-status"><div class="status-dot"></div><span id="navSysStatus">SYS.INIT</span></div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <p class="hero-tag">// DOSSIER CONFIDENTIEL — 2026.06.01</p>
+    <h1 class="hero-title">
+      <span class="line-glow">FUTUREMEN</span>
+      <span class="line-solid">ORGANISATION</span>
+      <span class="line-accent">INTER-TEMPORELLE</span>
+    </h1>
+    <p class="hero-desc" id="heroDesc">Stabiliser les timelines. Protéger le multivers. Voyager léger. <span id="heroAgentsCount">18</span> agents actifs dédiés à la préservation de l'équilibre temporel.</p>
+    <div class="hero-actions">
+      <a class="btn btn-cyan" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">VOIR LES AGENTS</a>
+      <a class="btn btn-violet" onclick="document.getElementById('venardi').scrollIntoView({behavior:'smooth'})">BAROMÈTRE VENARDI</a>
+      <a class="btn btn-accent" href="https://ipfs.io/ipfs/QmaTNez67femBqmjparcQaYYrehpXsDgMJJ4Tq2RFDYC55/futuremen.html" target="_blank">VERSION IPFS</a>
+      <a class="btn btn-cyan" href="https://k51qzi5uqu5diizqdlyx5fahlnepzat7wkxt2yyih7o3g5n1q3kztrb6lnrw7i.ipns.dweb.link/" target="_blank">PHONOGRAPHE URBAIN 🎵</a>
+      <a class="btn btn-accent" href="#reunions" onclick="document.getElementById('reunions').scrollIntoView({behavior:'smooth'})">RÉUNIONS 🗓️</a>
+    </div>
+  </section>
+
+  <!-- ═══ STATS ═══ -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-value" id="statEgregore">48.3%</span>
+      <span class="stat-label">ÉGRÉGORE</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="statDivergence">+4.8%</span>
+      <span class="stat-label">DIVERGENCE</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="statAgents">18</span>
+      <span class="stat-label">AGENTS</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">∞</span>
+      <span class="stat-label">TIMELINES</span>
+    </div>
+  </div>
+
+  <!-- ═══ AGENTS ═══ -->
+  <section id="agents">
+    <p class="section-tag">// AGENTS ACTIFS</p>
+    <h2 class="section-title">DOSSIER DES AGENTS</h2>
+    <div class="agent-section-title">Agents FM — QG</div>
+    <div class="cards-grid" id="agentGridFM"></div>
+    <div class="agent-section-title">Agents FL — Recrutés</div>
+    <div class="cards-grid" id="agentGridFL"></div>
+  </section>
+
+  <!-- ═══ VENARDI INTERACTIF ═══ -->
+  <section id="venardi">
+    <p class="section-tag">// VENARDI LORE CORE</p>
+    <h2 class="section-title">BAROMÈTRE INTERACTIF</h2>
+
+    <div class="venardi-panel">
+      <div class="venardi-grid">
+
+        <!-- Timeline -->
+        <div class="venardi-box">
+          <label>Timeline</label>
+          <select id="timelineSelect">
+            <option value="MANDELA-2013" selected>Mandela-2013</option>
+            <option value="TODD-2027">Todd (Défaite Occident)</option>
+            <option value="FRACTURE-2026">Fracture 2026</option>
+            <option value="RESILIENCE-2030">Résilience 2030</option>
+            <option value="custom">Personnalisée</option>
+          </select>
+          <div id="timelineDesc" style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem;"></div>
+          <div id="customTimelineDiv" class="hidden" style="margin-top:0.8rem;">
+            <input id="customTimelineName" type="text" placeholder="Nom de ta timeline" style="width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:0.5rem;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:var(--radius);">
+            <textarea id="customTimelineDesc" rows="2" placeholder="Description..." style="width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:0.5rem;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.75rem;margin-top:0.5rem;border-radius:var(--radius);"></textarea>
+          </div>
+        </div>
+
+        <!-- Égrégore -->
+        <div class="venardi-box">
+          <label>Égrégore</label>
+          <div class="egregore-display"><span id="egregoreDisplay">48.3</span><span>%</span></div>
+          <div class="egregore-bar"><div class="egregore-bar-fill" id="egregoreBar" style="width:48.3%"></div></div>
+          <input type="range" id="egregoreInput" min="5" max="95" value="48.3" step="0.1" style="width:100%;margin-top:0.8rem;accent-color:var(--cyan);">
+          <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--muted);margin-top:0.3rem;">
+            <span>5%</span><span id="egregoreValue">48.3%</span><span>95%</span>
+          </div>
+        </div>
+
+        <!-- Ticks -->
+        <div class="venardi-box">
+          <label>Ticks simulés</label>
+          <div class="ticks-display" id="ticksDisplay">0</div>
+          <input type="range" id="ticksInput" min="0" max="8000" value="0" step="1" style="width:100%;margin-top:0.5rem;accent-color:var(--cyan);">
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:0.8rem;">
+            <button class="tick-btn" onclick="setTicks(0)">0</button>
+            <button class="tick-btn" onclick="setTicks(7)">7</button>
+            <button class="tick-btn" onclick="setTicks(30)">30</button>
+            <button class="tick-btn" onclick="setTicks(63)" style="border-color:var(--violet);color:var(--violet);">63★</button>
+            <button class="tick-btn" onclick="setTicks(365)">365</button>
+            <button class="tick-btn" onclick="setTicks(2000)">2000</button>
+            <button class="tick-btn" onclick="setTicks(4380)">4380</button>
+            <button class="tick-btn" onclick="setTicks(8000)">8000</button>
+          </div>
+        </div>
+
+        <!-- Lieu & Date -->
+        <div class="venardi-box">
+          <label>Lieu / Date</label>
+          <input id="lieuInput" type="text" value="France" style="width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:0.5rem;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:var(--radius);">
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:0.6rem;">
+            <button class="tick-btn" onclick="setLieu('France')">🇫🇷</button>
+            <button class="tick-btn" onclick="setLieu('Paris, France')">🗼</button>
+            <button class="tick-btn" onclick="setLieu('Addis-Abeba, Éthiopie')">🌍</button>
+            <button class="tick-btn" onclick="setLieu('New York, USA')">🗽</button>
+            <button class="tick-btn" onclick="setLieu('Tokyo, Japon')">⛩️</button>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="venardi-box">
+          <label>Période</label>
+          <div style="display:flex;gap:0.5rem;">
+            <input id="startDate" type="date" style="flex:1;background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:0.5rem;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.7rem;border-radius:var(--radius);">
+            <input id="endDate" type="date" value="2038-12-31" style="flex:1;background:rgba(0,0,0,0.5);border:1px solid var(--border);padding:0.5rem;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.7rem;border-radius:var(--radius);">
+          </div>
+          <div style="margin-top:0.5rem;">
+            <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;">Agents activés</label>
+            <div id="activeAgentTags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:0.4rem;min-height:1.5rem;font-size:0.7rem;color:var(--muted);">Aucun</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Generate -->
+      <div style="text-align:center;margin-top:2rem;">
+        <button class="btn btn-violet" onclick="generatePrompt()" style="font-size:0.85rem;padding:1rem 3rem;">GÉNÉRER LE PROMPT VENARDI</button>
+      </div>
+    </div>
+
+    <!-- Prompt result -->
+    <div id="promptResult" class="hidden" style="margin-top:1.5rem;">
+      <div class="terminal">
+        <div class="terminal-line"><span class="terminal-prompt">$</span><span>venardi prompt — prêt</span></div>
+        <div id="promptText" style="background:rgba(0,0,0,0.4);padding:1rem;margin-top:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--accent);line-height:1.6;overflow:auto;white-space:pre-wrap;"></div>
+        <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;align-items:center;">
+          <button class="btn btn-accent" onclick="copyPrompt()">COPIER LE PROMPT</button>
+          <select id="modelSelect" style="background:rgba(0,0,0,0.6);border:1px solid var(--border);color:var(--text);padding:0.6rem 1rem;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:0.75rem;cursor:pointer;">
+            <option value="deepseek-chat" selected>🧠 DeepSeek (chat)</option>
+            <option value="deepseek-reasoner">🔮 DeepSeek Reasoner (pour Venardi)</option>
+          </select>
+          <span style="color:var(--muted);font-size:0.6rem;font-family:'Share Tech Mono',monospace;">Chat → DeepSeek<br>Venardi → modèle libre</span>
+          <button class="btn btn-violet" id="deepseekBtn" onclick="sendToDeepSeek()">🤖 ENVOYER</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DeepSeek response -->
+    <div id="deepseekResult" class="hidden" style="margin-top:1.5rem;">
+      <div class="terminal">
+        <div class="terminal-line"><span class="terminal-prompt">$</span><span>deepseek — réponse reçue</span></div>
+        <div id="deepseekLoading" style="display:none;padding:1rem;text-align:center;color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:0.8rem;">⏳ Génération en cours...</div>
+        <div id="deepseekText" style="background:rgba(0,0,0,0.4);padding:1rem;margin-top:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--text);line-height:1.6;overflow:auto;white-space:pre-wrap;"></div>
+        <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;">
+          <button class="btn btn-accent" onclick="copyDeepSeek()">COPIER LA RÉPONSE</button>
+          <button class="btn" onclick="hideDeepSeek()" style="border-color:var(--muted);color:var(--muted);">FERMER</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PROTOCOLES ═══ -->
+  <section id="protocols">
+    <p class="section-tag">// PROTOCOLES</p>
+    <h2 class="section-title">7 PROTOCOLES ANTI-PARADOXES</h2>
+    <div class="terminal">
+      <div class="terminal-line"><span class="terminal-prompt">$</span><span>cat /etc/futuremen/protocols</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 1. Observation Silencieuse — 72h minimum avant interaction</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 2. Intervention Minimale — La plus petite modification possible</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 3. Boucle de Causalité Fermée — Accomplir l'événement tel qu'observé</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 4. Non-Interaction avec Soi-Même — Pas de contact avec son double</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 5. Correction de Divergence — Seuil ±0.07% / Rollback automatique</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 6. Sacrifice Acceptable — Dernier recours uniquement</span></div>
+      <div class="terminal-line"><span class="terminal-output">→ 7. Journalisation Éternelle — Ledger immutable de toutes les actions</span></div>
+      <div class="terminal-line"><span class="terminal-prompt">$</span><span><span class="cursor"></span></span></div>
+    </div>
+  </section>
+
+  <!-- ═══ RÉUNIONS (CID EXPLORER) ═══ -->
+  <hr style="border:none;border-top:1px solid rgba(0,242,254,0.15);margin:3rem 0 1.5rem;">
+  <h2 class="section-title" id="reunions">🔗 CID EXPLORER — TAJCOIN</h2>
+  <p style="color:var(--muted,#6a8fa8);font-size:0.9rem;margin-bottom:1.5rem;text-align:center;">
+    Publications Futuremen ancrées sur la blockchain <strong>TajCoin</strong> (PoS / Blake2S)
+  </p>
+  <div style="overflow-x:auto;">
+    <table id="cid-table" style="width:100%;border-collapse:collapse;font-size:0.85rem;background:rgba(6,18,36,0.8);border:1px solid var(--border,rgba(0,245,255,0.15));">
+      <thead>
+        <tr style="background:rgba(0,242,254,0.05);">
+          <th data-sort="date" style="cursor:pointer;color:var(--cyan,#00f2fe);padding:10px 12px;text-align:left;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;user-select:none;">Date <span class="sort-arrow"></span></th>
+          <th data-sort="title" style="cursor:pointer;color:var(--cyan,#00f2fe);padding:10px 12px;text-align:left;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;user-select:none;">Titre <span class="sort-arrow"></span></th>
+          <th data-sort="cid" style="cursor:pointer;color:var(--cyan,#00f2fe);padding:10px 12px;text-align:left;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;user-select:none;">CID <span class="sort-arrow"></span></th>
+          <th style="color:var(--cyan,#00f2fe);padding:10px 12px;text-align:left;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;">TXID TajCoin</th>
+          <th data-sort="tags" style="cursor:pointer;color:var(--cyan,#00f2fe);padding:10px 12px;text-align:left;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;user-select:none;">Tags <span class="sort-arrow"></span></th>
+        </tr>
+      </thead>
+      <tbody id="cid-tbody"></tbody>
+    </table>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;justify-content:center;margin-top:1rem;">
+    <input id="cid-search" type="text" placeholder="🔍 Rechercher (titre, tag, CID, TXID)…" style="background:rgba(6,18,36,0.8);border:1px solid var(--border,rgba(0,245,255,0.15));color:var(--text,#c8dff0);padding:8px 14px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:0.8rem;width:280px;max-width:100%;outline:none;" />
+    <div id="cid-filters" style="display:flex;flex-wrap:wrap;gap:0.4rem;align-items:center;"></div>
+  </div>
+  <div id="cid-pager" style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;justify-content:center;margin-top:0.8rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;"></div>
+  <p style="text-align:center;font-size:0.7rem;color:var(--muted,#6a8fa8);margin-top:0.6rem;font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">∞ Ancré sur TajCoin — immuable</p>
+
+  <!-- ═══ CALENDRIER VENARDI ═══ -->
+  <section id="calendar">
+    <p class="section-tag">// CALENDRIER VENARDI</p>
+    <h2 class="section-title">TÂCHES &amp; MISSIONS</h2>
+
+    <div id="calendarLoading" style="text-align:center;padding:2rem;font-family:'Share Tech Mono',monospace;color:var(--muted);">⏳ Chargement du calendrier...</div>
+
+    <div id="calendarContent" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--muted);">
+          <span>Ancre : </span><span id="calAnchor" style="color:var(--cyan);">—</span>
+          <span style="margin-left:1rem;">Màj : </span><span id="calUpdated" style="color:var(--cyan);">—</span>
+        </div>
+        <div>
+          <button class="tick-btn" onclick="filterCalendar('all')" id="filterAll" style="border-color:var(--cyan);color:var(--cyan);">TOUTES</button>
+          <button class="tick-btn" onclick="filterCalendar('pending')" id="filterPending" style="border-color:var(--gold);color:var(--gold);">EN ATTENTE</button>
+          <button class="tick-btn" onclick="filterCalendar('done')" id="filterDone" style="border-color:var(--accent);color:var(--accent);">FAITES</button>
+        </div>
+      </div>
+      <div class="calendar-scroll" id="calendarTable" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;"></div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <span class="footer-logo">FUTUREMEN © 2026</span>
+    <span class="footer-copy">Stabiliser · Protéger · Voyager léger · Version 2026.06.01-nexus</span>
+    <a href="https://k51qzi5uqu5diizqdlyx5fahlnepzat7wkxt2yyih7o3g5n1q3kztrb6lnrw7i.ipns.dweb.link/" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--cyan);text-decoration:none;letter-spacing:0.1em;">🎵 Phonographe Urbain</a>
+  </footer>
+
+  <!-- ═══ LIGHTBOX ═══ -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+    <button class="lightbox__close" id="lightbox-close" aria-label="Fermer">&#x2715;</button>
+    <div class="lightbox__inner">
+      <div class="lightbox__left">
+        <img class="lightbox__img" id="lightbox-img" src="" alt="" />
+        <span class="lightbox__caption" id="lightbox-caption"></span>
+      </div>
+      <div class="lightbox__right">
+        <div class="chat-header" id="chatHeader">💬 Discuter avec <span id="chatAgentName">—</span>
+          <button class="chat-new" id="chatNew" title="Nouveau chat" style="margin-left:auto;background:rgba(0,242,254,0.1);border:1px solid var(--border,rgba(0,245,255,0.2));color:var(--cyan);padding:2px 10px;border-radius:8px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:0.65rem;">＋ Nouveau chat</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg chat-msg-agent">
+            <div class="chat-msg-content">Clique sur un agent pour lui parler.</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input class="chat-input" id="chatInput" type="text" placeholder="Écris un message..." />
+          <button class="chat-send" id="chatSend">↩</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MEDIA = "agents/";
+    const _host = location.hostname || '';
+    // Local si : localhost, 127.0.0.1, file:, ou IP privée LAN (192.168.x / 10.x / 172.16-31.x)
+    const IS_LOCAL = location.protocol === 'file:' || _host === 'localhost' || _host === '127.0.0.1' || _host === '::1' || /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(_host);
+    const BASE = IS_LOCAL ? MEDIA : "https://ipfs.io/ipfs/QmYFcshyr94KrASM5WAz7VYBCeh6NwM4n9fKUZTfNjj6kE/agents/";
+
+    const ALL_AGENTS = [
+      {id:"FM-001", name:"Michael",      role:"Chef / Patron",             unit:"Commandement",      theme:"gold",   badge:"Commandant",   skills:["Leadership","Vision stratégique","Sauts temporels","Ingénierie de prompts"],       phenotype:"Homme jeune, traits caucasiens, cheveux bruns, regard expressif et souvent perplexe.",                                              meta:"Naissance: 2038-01-19 · MIT",            img:"michael.jpg"},
+      {id:"FM-002", name:"Nova",         role:"Exploratrice Spatiale",     unit:"Exploration",       theme:"cyan",   badge:"Exploratrice", skills:["Astrophysique","Voyages interstellaires","Simulations temporelles","Scénarios alternatifs"],                                        phenotype:"Femme athlétique, traits futuristes, cheveux courts argentés, allure dynamique.",                                                           img:"nova.jpg"},
+      {id:"FM-003", name:"Circuit",      role:"Hacker Quantique",          unit:"Cybersécurité",     theme:"violet", badge:"Cybernétique", skills:["Cybersécurité","Cryptographie","IA quantique","Optimisation code"],              phenotype:"Humanoïde cybernétique, peau synthétique sombre avec circuits lumineux cyan, yeux augmentés, look hacker nocturne.",                         img:"circuit.jpg"},
+      {id:"FM-004", name:"Echo",         role:"Visionnaire Créative",      unit:"Stratégie",         theme:"cyan",   badge:"Visionnaire",   skills:["Génération d'idées","Narration stratégique","Art IA","Planification visuelle"],      phenotype:"Femme britannique, peau claire, cheveux longs ondulés blonds, traits délicats et rêveurs.",                                                    img:"echo.jpg"},
+      {id:"FM-005", name:"Vortex",       role:"Maître des Données",        unit:"Data",              theme:"violet", badge:"Entité IA",     skills:["Analyse big data","Prédiction d'événements","Gestion de ressources","Modélisation stat."],                                                  phenotype:"Entité robotique humanoïde, corps métallique noir et bleu néon, visage minimaliste avec viseur lumineux.",                                     img:"vortex.jpg"},
+      {id:"FM-006", name:"Pulse",        role:"Coordinateur Opérationnel", unit:"Logistique",        theme:"cyan",   badge:"Coordinateur",  skills:["Gestion d'équipe","Logistique","Intégration","Résolution de conflits"],           phenotype:"Homme athlétique, traits modernes, cheveux courts, allure de leader charismatique.",                                                           img:"pulse.jpg"},
+      {id:"FM-007", name:"Anna Petrescu",role:"Spécialiste Géopolitique",  unit:"Analyse",           theme:"gold",   badge:"Géopolitique",  skills:["Géopolitique","Histoire des civilisations","Anthropologie","Briefing culturel"],    phenotype:"Femme d'ethnie roumaine, cheveux bruns, yeux clairs, traits d'Europe de l'Est.",                                                               img:"anna.jpg"},
+      {id:"FM-008", name:"Olga Vinikova",role:"Secrétaire Exécutive",      unit:"Administration",    theme:"gold",   badge:"Exécutive",     skills:["Organisation admin.","Planification","Rédaction élégante","Narration"],           phenotype:"Femme ukrainienne, cheveux châtains, yeux verts, allure raffinée et élégante.",                                                                img:"olga.jpg"},
+      {id:"FM-009", name:"Abel",         role:"Culture Musicale",         unit:"Diplomatie",        theme:"cyan",   badge:"Musique",       skills:["Culture musicale","Analyse sonore","Playlists","Diplomatie musicale"],              phenotype:"Homme d'ethnie éthiopienne, peau foncée, traits est-africains, sourire chaleureux.",                                                           img:"abel.jpg"},
+      {id:"FM-010", name:"Scriptor",     role:"Développeur JS",           unit:"Conversion",        theme:"violet", badge:"IA · Dev",       skills:["Modularisation JS","Entity-to-code","Prog. minimaliste","Métaprogrammation"],     phenotype:"Entité androgyne humanoïde, peau synthétique mate, circuits subtils visibles, lignes de code flottantes.",                                       img:"scriptor.jpg"},
+      {id:"FM-011", name:"Tamara",       role:"Spiritualité / Paranormal", unit:"Énergies",          theme:"rose",   badge:"Mystique",      skills:["Spiritualité","Paranormal","Énergies vibrationnelles","Confédérations galactiques"],phenotype:"Femme petite, cheveux châtain foncé, traits mixtes russo-français, aura magnétique.",                                                          img:"tamara.jpg"},
+      {id:"FM-012", name:"Rackham Le Gris",role:"Officier Compliance & Stratégie Légale", unit:"Corsaires de la Conformité", theme:"gold", badge:"Flibustier", skills:["Conformité MiCA/TFR","Arbitrage UE/UK","Stratégie légale","Exchange EUR ↔ TajCoin"], phenotype:"Homme de 40 ans, barbe taillée nette, cicatrice fine sur la joue gauche, œil vif et calculateur, costume noir.",                         meta:"PRÉROGATIVE : recruter des agents FL-XXX (règle 13/08)",            img:"rackham.jpg"},
+      {id:"FL-001", name:"Paulina Svensson",role:"Agent Journaliste",      unit:"Terrain",           theme:"accent", badge:"Journaliste",   skills:["Reportage terrain","Enquête","Grand Gel","Vulgarisation"],                          phenotype:"Femme 34 ans, carnet en main, veste de terrain, regard attentif, toujours en mouvement.",                                                       img:"paulina.png"},
+      {id:"FL-002", name:"Léa",          role:"Explication Simple",       unit:"Résilience",        theme:"accent", badge:"Pédagogue",    skills:["Vulgarisation","Pédagogie","Accessibilité","Résilience populaire"],                phenotype:"Femme attablée dans un café parisien, carnet ouvert, sourire compréhensif qui met en confiance.",                                              img:"lea.png"},
+      {id:"FL-003", name:"Lucius Vorenus",role:"Astronaute — voyageur des étoiles", unit:"Exploration Spatiale", theme:"accent", badge:"Astronaute", skills:["Exploration spatiale","Voyages interstellaires","Résilience","Observation"],       phenotype:"Homme adulte, traits marqués par les longues missions, regard perdu vers un point lointain, casque spatial blanc rayé.",                       img:"lucius.jpg"},
+      {id:"FL-004", name:"Sophia Valerio",role:"Photographe & Visuels",    unit:"Transverse — Visuels", theme:"accent", badge:"Photographe", skills:["Photographie","Portraits médaillons","Direction artistique","Prompts visuels"],    phenotype:"Femme photographe, appareil en bandoulière, regard artistique.",                                                                             img:"sophia.jpg"},
+      {id:"FL-005", name:"Lily Feng",    role:"Économiste & Stratège financière", unit:"Économie & Finance", theme:"gold", badge:"Économiste", skills:["Analyse économique","Stratégie financière","Investissement","Business"],         phenotype:"Femme adulte, lunettes, tailleur sombre, précise et rigoureuse.",                                                                          img:"lily.jpg"},
+      {id:"FL-006", name:"Nadine Rasmussen",role:"Assistante Juridique — organise les agents FL", unit:"Corsaires de la Conformité", theme:"gold", badge:"Juriste", skills:["Droit","Organisation","Coordination des agents FL","Conformité"],           phenotype:"Jeune femme, carnet en main, sérieuse et efficace.",                                                                                         img:"nadine.jpg"}
+    ];
+
+    const TIMELINES = {
+      "MANDELA-2013": "Petits changements historiques qui mènent à des bifurcations importantes. La timeline de base.",
+      "TODD-2027": "Défaite silencieuse de l'Occident : désindustrialisation, fatigue civilisationnelle.",
+      "FRACTURE-2026": "Choc énergétique majeur et fracturation de la réalité. Le monde bascule.",
+      "RESILIENCE-2030": "Transition forcée vers la sobriété et la souveraineté.",
+      "custom": "Timeline entièrement personnalisée."
+    };
+
+    let currentTicks = 0;
+    let selectedAgents = [];
+
+    window.onload = function() {
+      setCurrentDate();
+      // Menu burger mobile
+      var burger = document.getElementById('navBurger');
+      var links = document.querySelector('.nav-links');
+      if (burger && links) {
+        burger.addEventListener('click', function() {
+          var open = links.classList.toggle('open');
+          burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        links.querySelectorAll('a').forEach(function(a) {
+          a.addEventListener('click', function() {
+            links.classList.remove('open');
+            burger.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+      renderAgents();
+      handleTimelineChange();
+      setupLightbox();
+
+      // Compteur d'agents dynamique (FM + FL — les PU restent sur la page du photographe)
+      var agentCount = ALL_AGENTS.length;
+      var statAgents = document.getElementById('statAgents');
+      var heroCount = document.getElementById('heroAgentsCount');
+      if (statAgents) statAgents.textContent = agentCount;
+      if (heroCount) heroCount.textContent = agentCount;
+
+      // ── Égrégore + Divergence dynamiques — lecture de la source de vérité (raven-state.json via API) ──
+      fetch('/api/venardi/egregore')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (!d || !d.ok) return;
+          var pct = d.percent != null ? d.percent : (d.purity * 100);
+          pct = Math.max(5, Math.min(95, parseFloat(pct.toFixed(1))));
+          var stat = document.getElementById('statEgregore');
+          var disp = document.getElementById('egregoreDisplay');
+          var bar = document.getElementById('egregoreBar');
+          var input = document.getElementById('egregoreInput');
+          var val = document.getElementById('egregoreValue');
+          if (stat) stat.textContent = pct + '%';
+          if (disp) disp.textContent = pct;
+          if (bar) bar.style.width = pct + '%';
+          if (input) input.value = pct;
+          if (val) val.textContent = pct + '%';
+          // Divergence (source de vérité : raven-state.json)
+          var divStat = document.getElementById('statDivergence');
+          if (divStat && d.divergence != null) divStat.textContent = d.divergence;
+        })
+        .catch(function() { /* silencieux : garde la valeur par défaut */ });
+
+      document.getElementById('egregoreInput').addEventListener('input', function() {
+        document.getElementById('egregoreDisplay').textContent = this.value;
+        document.getElementById('egregoreBar').style.width = this.value + '%';
+        document.getElementById('egregoreValue').textContent = this.value + '%';
+      });
+
+      document.getElementById('ticksInput').addEventListener('input', function() {
+        currentTicks = parseInt(this.value) || 0;
+        document.getElementById('ticksDisplay').textContent = currentTicks.toLocaleString('fr-FR');
+      });
+
+      document.getElementById('timelineSelect').addEventListener('change', handleTimelineChange);
+
+      setTimeout(function() {
+        document.getElementById('navSysStatus').textContent = 'SYS.ONLINE';
+      }, 2000);
+    };
+
+    function renderAgents() {
+      const gridFM = document.getElementById('agentGridFM');
+      const gridFL = document.getElementById('agentGridFL');
+      const renderInto = function(grid, list) {
+        if (!grid) return;
+        grid.innerHTML = list.map(function(a) {
+          const metaItems = a.meta ? a.meta.split('·').map(function(m) {
+            return '<span class="card__meta-item">' + m.trim() + '</span>';
+          }).join('') : '';
+          const skillTags = a.skills.map(function(s) {
+            return '<span class="skill-tag">' + s + '</span>';
+          }).join('');
+
+          return `
+            <article class="card theme-${a.theme}" data-agent="${a.id}">
+              <div class="card__topbar"></div>
+              <div class="card__photo">
+                <img src="${BASE + a.img}" alt="${a.name}" loading="lazy" />
+                <div class="card__photo-overlay"></div>
+                <span class="card__badge">${a.badge}</span>
+              </div>
+              <div class="card__body">
+                <div class="card__name">${a.name}</div>
+                <div class="card__id">${a.id}</div>
+                <span class="card__role">${a.role}</span>
+                <p class="card__desc">${a.unit} — Agent actif.</p>
+                <div class="card__meta">${metaItems}</div>
+                <div class="card__skills-title">Compétences</div>
+                <div class="card__skills">${skillTags}</div>
+                <p class="card__phenotype">${a.phenotype}</p>
+              </div>
+            </article>`;
+        }).join('');
+      };
+
+      renderInto(gridFM, ALL_AGENTS.filter(function(a) { return a.id.indexOf('FM-') === 0; }));
+      renderInto(gridFL, ALL_AGENTS.filter(function(a) { return a.id.indexOf('FL-') === 0; }));
+
+      // Click on photo → lightbox chat | Click elsewhere → Venardi select
+      document.querySelectorAll('.card').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+          var photo = this.querySelector('.card__photo');
+          if (photo && photo.contains(e.target)) {
+            // Ouvrir le lightbox chat via la fonction globale
+            var name = this.querySelector('.card__name').textContent;
+            if (window.openAgentChat) window.openAgentChat(name);
+          } else {
+            // Sélection Venardi
+            const id = this.dataset.agent;
+            const idx = selectedAgents.indexOf(id);
+            if (idx > -1) {
+              selectedAgents.splice(idx, 1);
+              this.style.outline = 'none';
+            } else {
+              selectedAgents.push(id);
+              this.style.outline = '1px solid var(--cyan)';
+            }
+            updateAgentTags();
+          }
+        });
+      });
+    }
+
+    function updateAgentTags() {
+      const container = document.getElementById('activeAgentTags');
+      if (selectedAgents.length === 0) {
+        container.innerHTML = '<span style="color:var(--muted);font-size:0.7rem;">Aucun — clique sur une carte</span>';
+        return;
+      }
+      container.innerHTML = selectedAgents.map(function(id) {
+        var a = ALL_AGENTS.find(function(x) { return x.id === id; });
+        return a ? '<span style="background:rgba(0,242,254,0.1);border:1px solid var(--border);padding:2px 8px;font-size:0.65rem;color:var(--cyan);">' + a.name + '</span>' : '';
+      }).join('');
+    }
+
+    function handleTimelineChange() {
+      const sel = document.getElementById('timelineSelect').value;
+      const desc = document.getElementById('timelineDesc');
+      const cdiv = document.getElementById('customTimelineDiv');
+      if (sel === 'custom') {
+        cdiv.classList.remove('hidden');
+        desc.textContent = 'Décris ta timeline ci-dessous.';
+      } else {
+        cdiv.classList.add('hidden');
+        desc.textContent = TIMELINES[sel] || '';
+      }
+    }
+
+    function setTicks(val) {
+      currentTicks = Math.max(0, parseInt(val) || 0);
+      document.getElementById('ticksInput').value = Math.min(currentTicks, 8000);
+      document.getElementById('ticksDisplay').textContent = currentTicks.toLocaleString('fr-FR');
+    }
+
+    function setLieu(val) {
+      document.getElementById('lieuInput').value = val;
+    }
+
+    function setCurrentDate() {
+      const today = new Date();
+      document.getElementById('startDate').value = today.toISOString().split('T')[0];
+    }
+
+    function generatePrompt() {
+      const tl = document.getElementById('timelineSelect').value;
+      const tlName = tl === 'custom' ? (document.getElementById('customTimelineName').value || 'Timeline Personnelle') : tl;
+      const tlDesc = tl === 'custom' ? document.getElementById('customTimelineDesc').value : (TIMELINES[tl] || '');
+      const egregore = document.getElementById('egregoreInput').value;
+      const lieu = document.getElementById('lieuInput').value || 'France';
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const agents = selectedAgents.length > 0 ? selectedAgents.join(', ') : 'Aucun';
+
+      const prompt = `Initialise une simulation Venardi avec ces paramètres :
+
+**Baromètre Venardi**
+- Timeline : ${tlName}
+- Description : ${tlDesc || 'Non précisée'}
+- Date début : ${start}
+- Date fin : ${end}
+- Ticks écoulés : ${currentTicks}
+- Égrégore : ${egregore} %
+- Lieu : ${lieu}
+- Agents activés : ${agents}
+
+Raconte le quotidien dans cette timeline de manière réaliste, en respectant les 7 protocoles anti-paradoxes et le seuil de divergence de 0.07 %.`;
+
+      document.getElementById('promptText').innerHTML = renderMarkdown(prompt);
+      document.getElementById('promptResult').classList.remove('hidden');
+      document.getElementById('promptResult').scrollIntoView({behavior:'smooth'});
+    }
+
+    function copyPrompt() {
+      const el = document.getElementById('promptText');
+      const text = el.textContent || el.innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        alert('✅ Prompt copié !');
+      }).catch(function() {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('✅ Prompt copié !');
+      });
+    }
+
+    function sendToDeepSeek() {
+      const btn = document.getElementById('deepseekBtn');
+      const loading = document.getElementById('deepseekLoading');
+      const result = document.getElementById('deepseekResult');
+      const textEl = document.getElementById('deepseekText');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ ENVOI...';
+      loading.style.display = 'block';
+      result.classList.remove('hidden');
+      result.scrollIntoView({behavior:'smooth'});
+      textEl.textContent = '';
+
+      const tl = document.getElementById('timelineSelect').value;
+      const tlName = tl === 'custom' ? (document.getElementById('customTimelineName').value || 'Timeline Personnelle') : tl;
+      const tlDesc = tl === 'custom' ? document.getElementById('customTimelineDesc').value : (TIMELINES[tl] || '');
+      const egregore = document.getElementById('egregoreInput').value;
+      const lieu = document.getElementById('lieuInput').value || 'France';
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const agents = selectedAgents.length > 0 ? selectedAgents.join(', ') : 'Aucun';
+
+      const apiBase = (document.querySelector('meta[name="planetes-api-base"]')?.content || '').replace(/\/+$/, '');
+      const selectedModel = document.getElementById('modelSelect')?.value || 'openclaw';
+
+      fetch(apiBase + '/api/venardi/generate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          timeline: tlName,
+          description: tlDesc,
+          startDate: start,
+          endDate: end,
+          ticks: currentTicks,
+          egregore: egregore,
+          lieu: lieu,
+          agents: agents,
+          model: selectedModel
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        loading.style.display = 'none';
+        textEl.innerHTML = renderMarkdown(data.reply || '⚠️ Pas de réponse');
+        if (data.mode === 'simulation') {
+          textEl.style.color = 'var(--gold)';
+        } else {
+          textEl.style.color = 'var(--text)';
+        }
+      })
+      .catch(function(err) {
+        loading.style.display = 'none';
+        textEl.innerHTML = '❌ Erreur : ' + err.message;
+        textEl.style.color = 'var(--err)';
+      })
+      .finally(function() {
+        btn.disabled = false;
+        btn.textContent = '🤖 ENVOYER À DEEPSEEK';
+      });
+    }
+
+    function copyDeepSeek() {
+      const el = document.getElementById('deepseekText');
+      const text = el.textContent || el.innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        alert('✅ Réponse copiée !');
+      }).catch(function() {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('✅ Réponse copiée !');
+      });
+    }
+
+    function hideDeepSeek() {
+      document.getElementById('deepseekResult').classList.add('hidden');
+      document.getElementById('deepseekLoading').style.display = 'none';
+    }
+
+    function renderMarkdown(text) {
+      return text
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+        .replace(/^- (.+)$/gm, '• $1')
+        .replace(/\n/g, '<br>');
+    }
+
+    // ─── LIGHTBOX + CHAT ───
+    var lightboxChat = {};
+    function setupLightbox() {
+      var lb = document.getElementById('lightbox');
+      var img = document.getElementById('lightbox-img');
+      var cap = document.getElementById('lightbox-caption');
+      var close = document.getElementById('lightbox-close');
+      var chatMessages = document.getElementById('chatMessages');
+      var chatInput = document.getElementById('chatInput');
+      var chatSend = document.getElementById('chatSend');
+      var chatAgentName = document.getElementById('chatAgentName');
+
+      var currentAgent = null;
+
+      function renderMarkdown(text) {
+        return text
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+          .replace(/^- (.+)$/gm, '• $1')
+          .replace(/\n/g, '<br>');
+    }
+      window.renderMarkdown = renderMarkdown;
+
+      function addMessage(text, type) {
+        var div = document.createElement('div');
+        div.className = 'chat-msg chat-msg-' + type;
+        div.innerHTML = '<div class="chat-msg-content">' + renderMarkdown(text) + '</div>';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function chatStorageKey(agentId) { return 'fm_chat_' + agentId; }
+
+      function loadChat(agentId) {
+        try {
+          var raw = localStorage.getItem(chatStorageKey(agentId));
+          if (!raw) return [];
+          var arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr.slice(-60) : [];
+        } catch (e) { return []; }
+      }
+
+      function saveChat(agentId, messages) {
+        try {
+          localStorage.setItem(chatStorageKey(agentId), JSON.stringify(messages.slice(-60)));
+        } catch (e) { /* quota / privé : silencieux */ }
+      }
+
+      window.openAgentChat = function(agentName) {
+        var agent = ALL_AGENTS.find(function(a) { return a.name === agentName; });
+        if (!agent) return;
+        var i = document.querySelector('article.card[data-agent="' + agent.id + '"] .card__photo img');
+        if (i) { img.src = i.src; img.alt = agentName; }
+        cap.textContent = agentName;
+        chatAgentName.textContent = agentName;
+        currentAgent = agent.id;
+        chatMessages.innerHTML = '';
+        var saved = loadChat(agent.id);
+        if (saved.length) {
+          saved.forEach(function(m) { addMessage(m.content, m.role === 'user' ? 'user' : 'agent'); });
+        } else {
+          addMessage('👋 Bonjour, je suis **' + agentName + '**. Quelle est ta question ?', 'agent');
+        }
+        lb.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function() { chatInput.focus(); }, 300);
+      };
+
+      function resetChat() {
+        if (!currentAgent) return;
+        if (!confirm('Repartir de zéro ? L\'historique de ' + chatAgentName.textContent + ' sera effacé.')) return;
+        try { localStorage.removeItem(chatStorageKey(currentAgent)); } catch (e) {}
+        chatMessages.innerHTML = '';
+        addMessage('👋 Nouveau chat avec **' + chatAgentName.textContent + '**. Quelle est ta question ?', 'agent');
+        chatInput.focus();
+      }
+
+      var chatNewBtn = document.getElementById('chatNew');
+      if (chatNewBtn) chatNewBtn.addEventListener('click', resetChat);
+
+      function agentChatRequest(agent, msg, onReply) {
+        var agentObj = ALL_AGENTS.find(function(a) { return a.id === agent; });
+        if (!agentObj) { onReply('Agent inconnu.'); return; }
+        var apiBase = (document.querySelector('meta[name="planetes-api-base"]')?.content || '').replace(/\/+$/, '');
+
+        // Contexte : les 20 derniers messages persistés (user/assistant)
+        var ctx = loadChat(agent).map(function(m) {
+          return { role: m.role === 'user' ? 'user' : 'assistant', content: m.content };
+        }).slice(-20);
+
+        fetch(apiBase + '/api/futuremen/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            agent: agentObj,
+            message: msg,
+            history: ctx,
+            model: 'deepseek-chat'
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.reply) {
+            onReply(data.reply);
+          } else {
+            onReply('⚠️ Réponse vide de l\'API.');
+          }
+        })
+        .catch(function(err) {
+          console.error('Chat API error:', err);
+          onReply('⚠️ Erreur de connexion à l\'API : ' + err.message);
+        });
+      }
+
+      function sendMessage() {
+        var text = chatInput.value.trim();
+        if (!text || !currentAgent) return;
+        addMessage(text, 'user');
+        chatInput.value = '';
+        // Persistance immédiate du message utilisateur
+        var saved = loadChat(currentAgent);
+        saved.push({ role: 'user', content: text });
+        saveChat(currentAgent, saved);
+        addMessage('*… réfléchit …*', 'agent');
+        agentChatRequest(currentAgent, text, function(reply) {
+          var msgs = chatMessages.querySelectorAll('.chat-msg');
+          var last = msgs[msgs.length - 1];
+          if (last && last.textContent.trim() === '*… réfléchit …*') {
+            last.remove();
+          }
+          addMessage(reply, 'agent');
+          var updated = loadChat(currentAgent);
+          updated.push({ role: 'assistant', content: reply });
+          saveChat(currentAgent, updated);
+        });
+      }
+
+      chatSend.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      function closeLB() {
+        lb.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      close.addEventListener('click', closeLB);
+      lb.addEventListener('click', function(e) {
+        if (e.target === lb || e.target.classList.contains('lightbox__inner')) closeLB();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLB();
+      });
+    }
+  </script>
+
+<script>
+(function(){
+'use strict';
+
+// ── Données du registre ──
+const registry = [
+  {
+    date: '2026-08-10',
+    title: 'Réunion Futuremen 10.08.2026 — Rattrapage + Correctif Vaisseau + Nettoyage Templates + Alignement TajNet',
+    cid: 'QmbXrtZ275gGwPAzfoHUgQYnqKFbYksiF95FVJcxVXU1qf',
+    txid: '472514914f67407fd7111a76b0c3acc2b8223cbe508c15d736ca28a38c110343',
+    tags: ['réunion','qg','vaisseau','templates','tajnet','phonographe','discord'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmbXrtZ275gGwPAzfoHUgQYnqKFbYksiF95FVJcxVXU1qf'
+  },
+  {
+    date: '2026-07-11',
+    title: 'Réunion Futuremen 11.07.2026 — Phase 2 + TajCoin + Baromètre 32%',
+    cid: 'QmYYWPZ6ozEgqQy43xAX3VJL8rwpNedb7BQpnpbome3fTo',
+    txid: 'ce189cd884500e919318cd778e80516a9e27fdd13ca608d16cdb71b12f5d24c5',
+    tags: ['réunion','qg','phase2','planètes','ormuz','tajcoin','baromètre'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmYYWPZ6ozEgqQy43xAX3VJL8rwpNedb7BQpnpbome3fTo'
+  },
+  {
+    date: '2026-06-23',
+    title: 'Réunion Futuremen 23.06.2026 — TajNet analysé + Mémoire optimisée + Phase 2',
+    cid: 'QmYJfpQ6asr7yk5hQbaBRqDiQNmAYPs8QtMBapcTrJQer3',
+    txid: 'ff0ccb879e71ff1840d48da34f05ce5af453ea369cc910bfe85459c58c6d84ff',
+    tags: ['réunion','qg','tajnet','mémoire','planètes','phase2','websearch'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmYJfpQ6asr7yk5hQbaBRqDiQNmAYPs8QtMBapcTrJQer3'
+  },
+  {
+    date: '2026-07-22',
+    title: 'Réunion Futuremen 22.07.2026 — Planète 8091 + Bad Michael Jackson',
+    cid: 'QmX6z5jPHMSPHZbJcpr6x8c9ZwSuX4rZ1up42K2waJKNxs',
+    txid: '3ec010c8ce038f7321cc0358e634db75cd311846a510a26ee2a31e1dfb15d848',
+    tags: ['réunion','qg','planète','phonographe','bad-michael-jackson','ipfs'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmX6z5jPHMSPHZbJcpr6x8c9ZwSuX4rZ1up42K2waJKNxs'
+  },
+  {
+    date: '2026-06-19',
+    title: 'Réunion Futuremen 19.06.2026 — Paix Iran + TajNet + Aéroport',
+    cid: 'QmdLNEjfvovKuHrH1r34AiDYFaG6QqUu2HjECG7T4rxJb3',
+    txid: '1f66a2992b9fbf8bf6c43056b887a8beab1256a82c8571c29120e70b2b573ef2',
+    tags: ['réunion','qg','tajnet','géopolitique','iran','aéroport','standard','template'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmdLNEjfvovKuHrH1r34AiDYFaG6QqUu2HjECG7T4rxJb3'
+  },
+  {
+    date: '2026-06-15',
+    title: 'Réunion Futuremen 15.06.2026',
+    cid: 'QmQnpAp722KXRqA4hFDk5CApnMUMXawRSSX4rUt1L1xASZ',
+    txid: '09502589e2bae3cc76826c6f4cae43673ed947d397cc88ab4835f75597eff1a6',
+    tags: ['réunion','qg','géopolitique','égrégore','iran'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmQnpAp722KXRqA4hFDk5CApnMUMXawRSSX4rUt1L1xASZ'
+  },
+  {
+    date: '2026-06-02',
+    title: 'Réunion Futuremen 02.06.2026',
+    cid: 'QmQt868DpPHRDLSo1ErXxq6ZjLLeFxbAqcT1ec6wD1hFdJ',
+    txid: 'e3df068acf87fb29a3d68d8092be27085190388b4eb62700db640b0afa5e212a',
+    tags: ['réunion','qg','planètes','ipfs'],
+    ipfsUrl: 'https://ipfs.io/ipfs/QmQt868DpPHRDLSo1ErXxq6ZjLLeFxbAqcT1ec6wD1hFdJ'
+  }
+];
+
+let sortKey = 'date';
+let sortAsc = false;
+
+function renderTable(data) {
+  const tbody = document.getElementById('cid-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = data.map(function(e) {
+    var tagsHtml = e.tags.map(function(t) {
+      return '<span style="display:inline-block;background:rgba(0,242,254,0.08);color:var(--cyan,#00f2fe);padding:1px 8px;border-radius:8px;font-size:0.7rem;margin:1px;border:1px solid rgba(0,242,254,0.15);">'+escapeHtml(t)+'</span>';
+    }).join('');
+    return '<tr style="cursor:pointer;transition:background 0.2s;" onclick="window.open(\''+e.ipfsUrl+'\',\'_blank\')" onmouseenter="this.style.background=\'rgba(0,242,254,0.08)\'" onmouseleave="this.style.background=\'transparent\'">'
+      + '<td style="padding:8px 12px;border-bottom:1px solid rgba(0,245,255,0.05);color:var(--muted,#6a8fa8);">'+escapeHtml(e.date)+'</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid rgba(0,245,255,0.05);color:var(--gold,#ffd966);">'+escapeHtml(e.title)+'</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid rgba(0,245,255,0.05);">'
+        + '<code style="font-size:0.75rem;color:var(--cyan,#00f2fe);background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;word-break:break-all;">'+escapeHtml(e.cid)+'</code><br>'
+        + '<a href="'+e.ipfsUrl+'" target="_blank" style="font-size:0.7rem;color:var(--accent,#00ff87);text-decoration:none;">🌐 ipfs.io</a>'
+      + '</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid rgba(0,245,255,0.05);">'
+        + '<code style="font-size:0.75rem;color:var(--accent,#00ff87);background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;word-break:break-all;">'+escapeHtml(e.txid)+'</code>'
+      + '</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid rgba(0,245,255,0.05);">'+tagsHtml+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function sortData(key) {
+  if (key === sortKey) {
+    sortAsc = !sortAsc;
+  } else {
+    sortKey = key;
+    sortAsc = key === 'date'; // date par défaut descendant
+  }
+  applyCidState();
+}
+
+function updateArrows() {
+  document.querySelectorAll('#cid-table th[data-sort]').forEach(function(th) {
+    var arrow = th.querySelector('.sort-arrow');
+    if (!arrow) return;
+    var key = th.getAttribute('data-sort');
+    if (key === sortKey) {
+      arrow.textContent = sortAsc ? ' ▲' : ' ▼';
+      arrow.style.color = 'var(--accent,#00ff87)';
+    } else {
+      arrow.textContent = '';
+    }
+  });
+}
+
+// ── CID Explorer souple : recherche + filtres + pagination (aligned with the IPFS gateway) ──
+var cidSearchQuery = '';
+var cidTagFilter = 'all';
+var cidPage = 1;
+var CID_PAGE_SIZE = 5;
+
+function getCidFiltered() {
+  var out = [].concat(registry);
+  // Recherche multi-tokens (titre, tags, CID, TXID, date)
+  var q = cidSearchQuery.trim().toLowerCase();
+  if (q) {
+    var tokens = q.split(/\s+/).filter(Boolean);
+    out = out.filter(function(e) {
+      var hay = (e.date + ' ' + e.title + ' ' + e.cid + ' ' + e.txid + ' ' + (e.tags || []).join(' ')).toLowerCase();
+      return tokens.every(function(t) { return hay.indexOf(t) !== -1; });
+    });
+  }
+  // Filtre tag
+  if (cidTagFilter !== 'all') {
+    out = out.filter(function(e) { return (e.tags || []).indexOf(cidTagFilter) !== -1; });
+  }
+  // Tri
+  out.sort(function(a, b) {
+    var va, vb;
+    if (sortKey === 'date') { va = a.date; vb = b.date; }
+    else if (sortKey === 'title') { va = a.title.toLowerCase(); vb = b.title.toLowerCase(); }
+    else if (sortKey === 'cid') { va = a.cid; vb = b.cid; }
+    else if (sortKey === 'tags') { va = (a.tags || []).join(','); vb = (b.tags || []).join(','); }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+  return out;
+}
+
+function applyCidState() {
+  var filtered = getCidFiltered();
+  var total = filtered.length;
+  var totalPages = Math.max(1, Math.ceil(total / CID_PAGE_SIZE));
+  if (cidPage > totalPages) cidPage = totalPages;
+  var start = (cidPage - 1) * CID_PAGE_SIZE;
+  var pageData = filtered.slice(start, start + CID_PAGE_SIZE);
+  updateArrows();
+  renderTable(pageData);
+  renderCidPager(total, totalPages);
+}
+
+function renderCidPager(total, totalPages) {
+  var pager = document.getElementById('cid-pager');
+  if (!pager) return;
+  var info = '<span style="color:var(--muted,#6a8fa8);">'+total+' publication'+(total>1?'s':'')+' · page '+cidPage+'/'+totalPages+'</span>';
+  var prevBtn = '<button type="button" onclick="cidPageChange(-1)" '+(cidPage<=1?'disabled style="opacity:0.4;"':'')+' style="background:rgba(0,242,254,0.08);border:1px solid var(--border,rgba(0,245,255,0.15));color:var(--cyan,#00f2fe);padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:inherit;">← Précédent</button>';
+  var nextBtn = '<button type="button" onclick="cidPageChange(1)" '+(cidPage>=totalPages?'disabled style="opacity:0.4;"':'')+' style="background:rgba(0,242,254,0.08);border:1px solid var(--border,rgba(0,245,255,0.15));color:var(--cyan,#00f2fe);padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:inherit;">Suivant →</button>';
+  pager.innerHTML = prevBtn + info + nextBtn;
+}
+
+window.cidPageChange = function(delta) {
+  cidPage += delta;
+  applyCidState();
+};
+
+function renderCidFilters() {
+  var box = document.getElementById('cid-filters');
+  if (!box) return;
+  var tags = {};
+  registry.forEach(function(e) { (e.tags || []).forEach(function(t) { tags[t] = (tags[t] || 0) + 1; }); });
+  var html = '<button type="button" data-tag="all" style="background:'+(cidTagFilter==='all'?'rgba(0,242,254,0.2)':'rgba(0,242,254,0.05)')+';border:1px solid var(--border,rgba(0,245,255,0.15));color:var(--cyan,#00f2fe);padding:4px 10px;border-radius:8px;cursor:pointer;font-family:\'Share Tech Mono\',monospace;font-size:0.7rem;">Tous</button>';
+  Object.keys(tags).sort().forEach(function(t) {
+    html += '<button type="button" data-tag="'+escapeHtml(t)+'" style="background:'+(cidTagFilter===t?'rgba(0,242,254,0.2)':'rgba(0,242,254,0.05)')+';border:1px solid var(--border,rgba(0,245,255,0.15));color:var(--cyan,#00f2fe);padding:4px 10px;border-radius:8px;cursor:pointer;font-family:\'Share Tech Mono\',monospace;font-size:0.7rem;">'+escapeHtml(t)+' ('+tags[t]+')</button>';
+  });
+  box.innerHTML = html;
+  box.querySelectorAll('button[data-tag]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      cidTagFilter = this.getAttribute('data-tag');
+      cidPage = 1;
+      renderCidFilters();
+      applyCidState();
+    });
+  });
+}
+
+function initCIDTable() {
+  // Attacher les events de tri
+  document.querySelectorAll('#cid-table th[data-sort]').forEach(function(th) {
+    th.addEventListener('click', function() {
+      sortData(this.getAttribute('data-sort'));
+    });
+  });
+  // Recherche
+  var search = document.getElementById('cid-search');
+  if (search) {
+    search.addEventListener('input', function() {
+      cidSearchQuery = this.value;
+      cidPage = 1;
+      applyCidState();
+    });
+  }
+  // Filtres tags
+  renderCidFilters();
+  // Rendu initial
+  applyCidState();
+}
+
+// ── Calendrier Venardi ──
+let calendarData = [];
+
+function loadCalendar() {
+  var loading = document.getElementById('calendarLoading');
+  var content = document.getElementById('calendarContent');
+  if (!loading || !content) {
+    // La section n'existe pas encore dans le DOM
+    return;
+  }
+  fetch('/api/venardi/calendar')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      calendarData = data.tasks || [];
+      var calAnchor = document.getElementById('calAnchor');
+      var calUpdated = document.getElementById('calUpdated');
+      if (calAnchor) calAnchor.textContent = data.anchor || '—';
+      if (calUpdated) calUpdated.textContent = data.updated ? new Date(data.updated).toLocaleString('fr-FR') : '—';
+      loading.classList.add('hidden');
+      content.classList.remove('hidden');
+      renderCalendar(calendarData);
+    })
+    .catch(function(e) {
+      if (loading) loading.innerHTML = '⚠️ Erreur de chargement : ' + e.message;
+    });
+}
+
+// Tri du calendrier (comme le CID Explorer des réunions)
+var calSortKey = 'dueDate';
+var calSortAsc = true;
+
+function calCompare(a, b, key) {
+  var va, vb;
+  if (key === 'dueDate') { va = a.dueDate || ''; vb = b.dueDate || ''; }
+  else if (key === 'title') { va = (a.title || '').toLowerCase(); vb = (b.title || '').toLowerCase(); }
+  else if (key === 'agent') { va = (a.agent || '').toLowerCase(); vb = (b.agent || '').toLowerCase(); }
+  else if (key === 'status') { va = a.status || ''; vb = b.status || ''; }
+  else if (key === 'priority') {
+    var order = { critical: 0, high: 1, normal: 2 };
+    va = order[a.priority] !== undefined ? order[a.priority] : 3;
+    vb = order[b.priority] !== undefined ? order[b.priority] : 3;
+  }
+  else { va = a.id || 0; vb = b.id || 0; }
+  if (va < vb) return calSortAsc ? -1 : 1;
+  if (va > vb) return calSortAsc ? 1 : -1;
+  return (a.id || 0) - (b.id || 0);
+}
+
+window.sortCalendar = function(key) {
+  if (key === calSortKey) {
+    calSortAsc = !calSortAsc;
+  } else {
+    calSortKey = key;
+    calSortAsc = key === 'dueDate'; // date par défaut : croissant
+  }
+  renderCalendar(calendarData);
+};
+
+function updateCalArrows() {
+  document.querySelectorAll('#calendarTable th[data-sort]').forEach(function(th) {
+    var arrow = th.querySelector('.cal-sort-arrow');
+    if (!arrow) return;
+    var key = th.getAttribute('data-sort');
+    if (key === calSortKey) {
+      arrow.textContent = calSortAsc ? ' ▲' : ' ▼';
+      arrow.style.color = 'var(--accent,#00ff87)';
+    } else {
+      arrow.textContent = '';
+    }
+  });
+}
+
+function renderCalendar(tasks) {
+  var container = document.getElementById('calendarTable');
+  if (!container) return;
+  if (!tasks.length) {
+    container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);">Aucune tâche.</div>';
+    return;
+  }
+  var thStyle = 'padding:6px 8px;text-align:left;cursor:pointer;user-select:none;';
+  var html = '<table style="width:100%;border-collapse:collapse;">';
+  html += '<thead><tr style="border-bottom:1px solid var(--border);font-size:0.6rem;letter-spacing:0.15em;color:var(--violet);text-transform:uppercase;">';
+  html += '<th data-sort="id" onclick="sortCalendar(\'id\')" style="' + thStyle + '">ID<span class="cal-sort-arrow"></span></th>';
+  html += '<th data-sort="title" onclick="sortCalendar(\'title\')" style="' + thStyle + '">Tâche<span class="cal-sort-arrow"></span></th>';
+  html += '<th data-sort="agent" onclick="sortCalendar(\'agent\')" style="' + thStyle + '">Agent<span class="cal-sort-arrow"></span></th>';
+  html += '<th data-sort="dueDate" onclick="sortCalendar(\'dueDate\')" style="' + thStyle + '">Échéance<span class="cal-sort-arrow"></span></th>';
+  html += '<th data-sort="status" onclick="sortCalendar(\'status\')" style="' + thStyle + '">Statut<span class="cal-sort-arrow"></span></th>';
+  html += '<th data-sort="priority" onclick="sortCalendar(\'priority\')" style="' + thStyle + '">Priorité<span class="cal-sort-arrow"></span></th>';
+  html += '</tr></thead><tbody>';
+  tasks.sort(function(a,b) { return calCompare(a, b, calSortKey); });
+  tasks.forEach(function(t) {
+    var statusColor = t.status === 'done' ? 'var(--accent)' : t.status === 'pending' ? 'var(--gold)' : 'var(--pink)';
+    var priorityColor = t.priority === 'critical' ? 'var(--pink)' : t.priority === 'high' ? 'var(--gold)' : 'var(--muted)';
+    html += '<tr style="border-bottom:1px solid rgba(0,245,255,0.05);">';
+    html += '<td style="padding:6px 8px;color:var(--muted);">#' + t.id + '</td>';
+    html += '<td style="padding:6px 8px;color:var(--text);max-width:300px;">' + htmlEscape(t.title || '') + '</td>';
+    html += '<td style="padding:6px 8px;color:var(--cyan);font-size:0.65rem;">' + htmlEscape(t.agent || '') + '</td>';
+    html += '<td style="padding:6px 8px;color:var(--muted);">' + htmlEscape(t.dueDate || '') + '</td>';
+    html += '<td style="padding:6px 8px;color:' + statusColor + ';">' + htmlEscape(t.status || '') + '</td>';
+    html += '<td style="padding:6px 8px;color:' + priorityColor + ';font-size:0.65rem;">' + htmlEscape(t.priority || '') + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  updateCalArrows();
+}
+
+function htmlEscape(str) {
+  return String(str).replace(/[&<>"']/g, function(c) {
+    return '&#' + c.charCodeAt(0) + ';';
+  });
+}
+
+window.filterCalendar = function(filter) {
+  if (!calendarData) return;
+  document.querySelectorAll('#calendar .tick-btn').forEach(function(b) {
+    b.style.opacity = '0.5';
+  });
+  var activeBtn = filter === 'all' ? 'filterAll' : filter === 'pending' ? 'filterPending' : 'filterDone';
+  var btn = document.getElementById(activeBtn);
+  if (btn) btn.style.opacity = '1';
+  if (filter === 'all') {
+    renderCalendar(calendarData);
+  } else {
+    renderCalendar(calendarData.filter(function(t) { return t.status === filter; }));
+  }
+}
+
+// Initialisation — DOMContentLoaded
+function initAll() {
+  initCIDTable();
+  loadCalendar();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAll);
+} else {
+  initAll();
+}
+
+})();
+</script>
+
+</body>
+</html>

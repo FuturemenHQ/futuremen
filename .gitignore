@@ -1,0 +1,18 @@
+# Secrets — never commit these
+*.env
+secrets/
+DEEPSEEK_KEY.txt
+*.key
+*.pem
+
+# Private data
+memory/
+venardi-calendar.json
+tajnet-registry.json
+
+# Generated / cache
+node_modules/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
