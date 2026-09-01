@@ -104,8 +104,15 @@ footer a{color:var(--gold);text-decoration:none}
           <span>Egregore purity</span><span id="purityLabel">—</span>
         </div>
         <div class="meter"><div id="purityMeter" style="width:0%"></div></div>
-        <p class="sub" style="margin-top:.8rem"><b>Timeline:</b> <span id="timeline">—</span><br>
-        <b>Tension:</b> <span id="tension">—</span></p>
+        <input type="range" id="puritySlider" min="0" max="100" value="50" style="margin-top:.6rem;accent-color:var(--gold)" oninput="onPuritySlide(this.value)">
+        <label>Timeline</label>
+        <input id="baroTimeline" placeholder="Your timeline name">
+        <label>Tension</label>
+        <input id="baroTension" placeholder="Low / Moderate / High">
+        <label>Divergence</label>
+        <input id="baroDivergence" placeholder="0%">
+        <label>Location</label>
+        <input id="baroLieu" placeholder="Your HQ">
       </div>
       <div>
         <label>Status</label>
@@ -370,14 +377,30 @@ function renderBarometer(){
   const pct=Math.round(p*100);
   document.getElementById("purityLabel").textContent=pct+"%";
   document.getElementById("purityMeter").style.width=Math.min(100,pct)+"%";
-  document.getElementById("timeline").textContent=barometer.timeline||(barometer.barometer&&barometer.barometer.timelineActive)||"—";
-  document.getElementById("tension").textContent=barometer.mandelaTension||"—";
+  document.getElementById("puritySlider").value=pct;
+  document.getElementById("baroTimeline").value=barometer.timeline||(barometer.barometer&&barometer.barometer.timelineActive)||"";
+  document.getElementById("baroTension").value=barometer.mandelaTension||"";
+  document.getElementById("baroDivergence").value=barometer.divergence||"";
+  document.getElementById("baroLieu").value=(barometer.barometer&&barometer.barometer.lieu)||"";
   document.getElementById("baroStatus").value=(barometer.barometer&&barometer.barometer.statut)||barometer.statut||"";
+}
+function onPuritySlide(v){
+  const pct=Math.max(0,Math.min(100,Number(v)));
+  document.getElementById("purityLabel").textContent=pct+"%";
+  document.getElementById("purityMeter").style.width=pct+"%";
 }
 function saveBarometer(){
   barometer.barometer = barometer.barometer||{};
-  barometer.barometer.statut=document.getElementById("baroStatus").value;
-  barometer.barometer.purity=Number(barometer.egregorePurity!=null?barometer.egregorePurity:barometer.barometer.purity);
+  const pct=Math.max(0,Math.min(100,Number(document.getElementById("puritySlider").value)||50));
+  barometer.egregorePurity = pct/100;
+  barometer.egregorePercent = pct;
+  barometer.barometer.purity = pct/100;
+  barometer.timeline = document.getElementById("baroTimeline").value.trim()||barometer.timeline;
+  barometer.barometer.timelineActive = barometer.timeline;
+  barometer.mandelaTension = document.getElementById("baroTension").value.trim()||barometer.mandelaTension;
+  barometer.divergence = document.getElementById("baroDivergence").value.trim()||barometer.divergence;
+  barometer.barometer.lieu = document.getElementById("baroLieu").value.trim();
+  barometer.barometer.statut = document.getElementById("baroStatus").value;
   barometer.timestamp=new Date().toISOString();
   try{localStorage.setItem(LS_BARO,JSON.stringify(barometer));}catch(e){}
   toast("Barometer saved");
