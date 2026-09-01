@@ -27,6 +27,31 @@ This public edition is meant for **other OpenClaw users** who want to build thei
 4. Open `futuremen.html` in a browser to see the dashboard.
 5. Build your own coordination layer from the blank `venardi/` framework (calendar + barometer).
 
+## Use it standalone — no OpenClaw required
+
+`index.html` is a **self-contained dashboard** that works in any browser, with or without OpenClaw:
+
+1. Open `index.html` (double-click, or serve it: `python3 -m http.server 8080`).
+2. **Agents** — add your team (name, category, role, status).
+3. **Calendar** — add tasks, mark them done; export to `venardi/venardi-calendar.json`.
+4. **Barometer** — set egregore purity, timeline, tension; export to `venardi/raven-state.json`.
+5. **Notes** — daily scratchpad.
+
+Everything is saved in your browser (`localStorage`) and exportable as plain JSON files — so you can move data between the dashboard and your OpenClaw workspace freely.
+
+> The dashboard is a front-end menu. The JSON files are the source of truth: edit them by hand, or wire them into your own scripts, cron jobs, or the core engine (`futuremen-core.js`).
+
+## Bring Your Own Key (BYOK)
+
+The dashboard can talk to an LLM (DeepSeek, OpenAI, or any OpenAI-compatible API) with **your own API key** — nothing is stored server-side.
+
+1. Get a key from your provider (e.g. DeepSeek: https://platform.deepseek.com — `deepseek-chat` model).
+2. In `index.html`, open the **AI / BYOK** panel, paste your key and choose a model.
+3. The key is kept **only in your browser** (`localStorage`) — export/import it with the dashboard JSON if you need to move machines.
+4. Chat with your agents, or use the console for quick prompts.
+
+The core engine (`futuremen-core.js`) works without any key: its simulation mode prints ready-to-paste dialogue blocks that you can send to any assistant or API of your choice.
+
 ### Core engine (optional)
 
 ```bash

@@ -125,6 +125,36 @@ footer a{color:var(--gold);text-decoration:none}
     </div>
   </div>
 
+  <!-- ============ AI / BYOK ============ -->
+  <div class="card">
+    <h2>🤖 AI / BYOK</h2>
+    <p class="sub">Bring your own key — talk to your agents with your own LLM API key. The key stays <b>only in your browser</b> (localStorage), never sent anywhere except your provider.</p>
+    <div class="grid2">
+      <div>
+        <label>API key</label>
+        <input id="aiKey" type="password" placeholder="sk-…" autocomplete="off">
+        <label>Base URL (OpenAI-compatible)</label>
+        <input id="aiBase" placeholder="https://api.deepseek.com/v1">
+        <label>Model</label>
+        <input id="aiModel" placeholder="deepseek-chat">
+        <div class="row" style="margin-top:.7rem">
+          <button class="btn primary" onclick="saveAi()">💾 Save key</button>
+          <button class="btn danger" onclick="clearAi()">🗑 Clear</button>
+        </div>
+        <p class="sub" style="margin-top:.6rem">Providers: DeepSeek (<code>https://api.deepseek.com/v1</code>, <code>deepseek-chat</code>) · OpenAI (<code>https://api.openai.com/v1</code>, <code>gpt-4o-mini</code>) · any OpenAI-compatible endpoint.</p>
+      </div>
+      <div>
+        <label>Chat with an agent</label>
+        <select id="aiAgent"></select>
+        <textarea id="aiPrompt" placeholder="Your message to the agent…" style="margin-top:.5rem"></textarea>
+        <div class="row" style="margin-top:.6rem">
+          <button class="btn primary" onclick="aiSend()">➤ Send</button>
+        </div>
+        <div id="aiOut" class="sub" style="margin-top:.6rem;white-space:pre-wrap;max-height:180px;overflow:auto"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ MEMORY / NOTES ============ -->
   <div class="card">
     <h2>📝 Quick notes</h2>
@@ -412,6 +442,56 @@ function saveNotes(){
   toast("Notes saved");
 }
 
+// ---- AI / BYOK ----
+const LS_AI = "futuremen_ai";
+function loadAi(){
+  let cfg={base:"https://api.deepseek.com/v1",model:"deepseek-chat",key:""};
+  try{const c=JSON.parse(localStorage.getItem(LS_AI)||"{}"); Object.assign(cfg,c);}catch(e){}
+  document.getElementById("aiKey").value=cfg.key||"";
+  document.getElementById("aiBase").value=cfg.base||"https://api.deepseek.com/v1";
+  document.getElementById("aiModel").value=cfg.model||"deepseek-chat";
+  const sel=document.getElementById("aiAgent");
+  sel.innerHTML="<option value=''>— general assistant —</option>";
+  agents.forEach(a=>{const o=document.createElement("option");o.value=a.name;o.textContent=a.name+(a.role?" ("+a.role+")":"");sel.appendChild(o);});
+}
+function saveAi(){
+  const cfg={
+    key: document.getElementById("aiKey").value.trim(),
+    base: document.getElementById("aiBase").value.trim()||"https://api.deepseek.com/v1",
+    model: document.getElementById("aiModel").value.trim()||"deepseek-chat"
+  };
+  try{localStorage.setItem(LS_AI,JSON.stringify(cfg));}catch(e){}
+  toast("Key saved locally");
+}
+function clearAi(){
+  try{localStorage.removeItem(LS_AI);}catch(e){}
+  document.getElementById("aiKey").value="";
+  toast("Key cleared");
+}
+function aiSend(){
+  const key=document.getElementById("aiKey").value.trim();
+  const base=(document.getElementById("aiBase").value.trim()||"https://api.deepseek.com/v1").replace(/\/$/,"");
+  const model=document.getElementById("aiModel").value.trim()||"deepseek-chat";
+  const agentName=document.getElementById("aiAgent").value;
+  const prompt=document.getElementById("aiPrompt").value.trim();
+  if(!key){toast("Add your API key first (BYOK)");return;}
+  if(!prompt){toast("Write a message");return;}
+  const out=document.getElementById("aiOut");
+  const agent=agents.find(a=>a.name===agentName);
+  const sys = agent
+    ? "You are "+agent.name+", "+(agent.role||"agent")+" (category: "+(agent.category||"core")+"). Respond in character, concise and direct."
+    : "You are a helpful assistant for a Futuremen workspace. Respond concisely.";
+  out.textContent="…";
+  fetch(base+"/chat/completions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+    body:JSON.stringify({model:model,messages:[{role:"system",content:sys},{role:"user",content:prompt}],temperature:0.7})
+  })
+  .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+  .then(d=>{out.textContent=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||JSON.stringify(d).slice(0,500);})
+  .catch(e=>{out.textContent="Error: "+e.message; toast("Request failed");});
+}
+
 // ---- import / export ----
 function exportJson(obj,filename){
   const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
@@ -431,7 +511,7 @@ function importJson(input,which){
   input.value="";
 }
 
-document.addEventListener("DOMContentLoaded",loadAll);
+document.addEventListener("DOMContentLoaded",()=>{loadAll(); loadAi();});
 </script>
 </body>
 </html>
