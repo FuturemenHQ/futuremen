@@ -136,7 +136,17 @@ footer a{color:var(--gold);text-decoration:none}
         <label>Base URL (OpenAI-compatible)</label>
         <input id="aiBase" placeholder="https://api.deepseek.com/v1">
         <label>Model</label>
-        <input id="aiModel" placeholder="deepseek-chat">
+        <select id="aiModel">
+          <option value="deepseek-chat">DeepSeek — deepseek-chat</option>
+          <option value="deepseek-reasoner">DeepSeek — deepseek-reasoner</option>
+          <option value="gpt-4o-mini">OpenAI — gpt-4o-mini</option>
+          <option value="gpt-4o">OpenAI — gpt-4o</option>
+          <option value="gpt-4.1-mini">OpenAI — gpt-4.1-mini</option>
+          <option value="claude-3-5-sonnet">Anthropic — claude-3-5-sonnet</option>
+          <option value="claude-sonnet-4">Anthropic — claude-sonnet-4</option>
+          <option value="__custom__">Custom…</option>
+        </select>
+        <input id="aiModelCustom" placeholder="custom model id" style="display:none;margin-top:.4rem">
         <div class="row" style="margin-top:.7rem">
           <button class="btn primary" onclick="saveAi()">💾 Save key</button>
           <button class="btn danger" onclick="clearAi()">🗑 Clear</button>
@@ -444,21 +454,31 @@ function saveNotes(){
 
 // ---- AI / BYOK ----
 const LS_AI = "futuremen_ai";
+function aiModelValue(){
+  const sel=document.getElementById("aiModel");
+  if(sel.value==="__custom__") return document.getElementById("aiModelCustom").value.trim();
+  return sel.value;
+}
 function loadAi(){
   let cfg={base:"https://api.deepseek.com/v1",model:"deepseek-chat",key:""};
   try{const c=JSON.parse(localStorage.getItem(LS_AI)||"{}"); Object.assign(cfg,c);}catch(e){}
   document.getElementById("aiKey").value=cfg.key||"";
   document.getElementById("aiBase").value=cfg.base||"https://api.deepseek.com/v1";
-  document.getElementById("aiModel").value=cfg.model||"deepseek-chat";
-  const sel=document.getElementById("aiAgent");
-  sel.innerHTML="<option value=''>— general assistant —</option>";
-  agents.forEach(a=>{const o=document.createElement("option");o.value=a.name;o.textContent=a.name+(a.role?" ("+a.role+")":"");sel.appendChild(o);});
+  const sel=document.getElementById("aiModel");
+  const known=Array.from(sel.options).map(o=>o.value);
+  if(known.includes(cfg.model)){ sel.value=cfg.model; }
+  else if(cfg.model){ sel.value="__custom__"; document.getElementById("aiModelCustom").value=cfg.model; document.getElementById("aiModelCustom").style.display="block"; }
+  else { sel.value="deepseek-chat"; }
+  sel.onchange=()=>{ document.getElementById("aiModelCustom").style.display = sel.value==="__custom__" ? "block" : "none"; };
+  const agSel=document.getElementById("aiAgent");
+  agSel.innerHTML="<option value=''>— general assistant —</option>";
+  agents.forEach(a=>{const o=document.createElement("option");o.value=a.name;o.textContent=a.name+(a.role?" ("+a.role+")":"");agSel.appendChild(o);});
 }
 function saveAi(){
   const cfg={
     key: document.getElementById("aiKey").value.trim(),
     base: document.getElementById("aiBase").value.trim()||"https://api.deepseek.com/v1",
-    model: document.getElementById("aiModel").value.trim()||"deepseek-chat"
+    model: aiModelValue()||"deepseek-chat"
   };
   try{localStorage.setItem(LS_AI,JSON.stringify(cfg));}catch(e){}
   toast("Key saved locally");
@@ -471,7 +491,7 @@ function clearAi(){
 function aiSend(){
   const key=document.getElementById("aiKey").value.trim();
   const base=(document.getElementById("aiBase").value.trim()||"https://api.deepseek.com/v1").replace(/\/$/,"");
-  const model=document.getElementById("aiModel").value.trim()||"deepseek-chat";
+  const model=aiModelValue()||"deepseek-chat";
   const agentName=document.getElementById("aiAgent").value;
   const prompt=document.getElementById("aiPrompt").value.trim();
   if(!key){toast("Add your API key first (BYOK)");return;}
