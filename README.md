@@ -67,6 +67,10 @@ The engine exposes `FUTUREMEN` (team registry), `Futuremen.recordProgress(...)`,
 
 You are free to use, modify and redistribute this workspace under the terms of the GPL v2. If you build something on top of it, share it back under the same license.
 
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for the workflow (fork + pull request), ground rules (no secrets, no private data, English only) and the privacy scan to run before committing.
+
 ## Notes
 
 - This is a **template**: the original project keeps its private history, memory and infrastructure elsewhere. What you see here is the public face.
