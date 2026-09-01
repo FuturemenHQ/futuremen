@@ -10,7 +10,8 @@ This public edition is meant for **other OpenClaw users** who want to build thei
 
 | File | Purpose |
 |------|---------|
-| `futuremen.html` | The dashboard (single-file web UI, works offline) |
+| `index.html` | **Generic dashboard** — manage calendar, barometer and notes in the browser (works offline, data kept in localStorage, export/import JSON) |
+| `futuremen.html` | Example dashboard (single-file web UI) |
 | `futuremen-core.js` | Core engine: lore, team registry, protocols, progress log (Node.js + browser) |
 | `AGENTS.md` | Instructions your OpenClaw agent follows in this workspace |
 | `SOUL.md` | Personality & tone for your agent |

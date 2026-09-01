@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futuremen — Workspace Dashboard</title>
+<style>
+:root{--bg:#0a0a0f;--panel:#14141c;--border:#26263a;--gold:#c9a96e;--gold2:#e0c080;--text:#e8e4d9;--dim:#a89f8c;--muted:#6f6f86;--ok:#7ecb8a;--warn:#e0a050;--bad:#e06060}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.5}
+header{background:linear-gradient(180deg,#14141c,#0a0a0f);border-bottom:1px solid var(--border);padding:2rem 1rem 1.5rem;text-align:center}
+header h1{letter-spacing:2px;margin:.2rem 0;font-size:1.6rem}
+header h1 span{color:var(--gold)}
+header .tag{display:inline-block;background:#c9a96e22;color:var(--gold);border:1px solid #c9a96e55;border-radius:99px;padding:2px 12px;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;margin-top:.4rem}
+main{max-width:860px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin:1rem 0}
+.card h2{margin:.1rem 0 .8rem;color:var(--gold2);font-size:1.1rem;letter-spacing:.5px}
+.sub{color:var(--dim);font-size:.9rem;margin-bottom:1rem}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.6rem 0}
+.btn{background:#c9a96e22;border:1px solid #c9a96e66;color:var(--gold2);border-radius:8px;padding:.45rem .9rem;font-size:.85rem;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--gold)}
+.btn.primary{background:var(--gold);color:#14141c;border-color:var(--gold);font-weight:600}
+.btn.danger{background:#e0606022;border-color:#e0606066;color:#e09090}
+input,select,textarea{background:#0e0e15;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.5rem .7rem;font-size:.85rem;font-family:inherit;width:100%}
+textarea{min-height:80px;resize:vertical}
+label{display:block;color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;margin:.7rem 0 .25rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{color:var(--muted);text-align:left;font-weight:500;padding:.4rem .5rem;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px}
+td{padding:.5rem;border-bottom:1px solid #1d1d2e;vertical-align:top}
+.status{padding:2px 8px;border-radius:99px;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}
+.status.pending{background:#e0a05022;color:var(--warn);border:1px solid #e0a05055}
+.status.done{background:#7ecb8a22;color:var(--ok);border:1px solid #7ecb8a55}
+.status.standby{background:#6f6f8622;color:var(--muted);border:1px solid #6f6f8655}
+.meter{height:10px;background:#0e0e15;border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+.meter > div{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .4s}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.empty{color:var(--muted);font-style:italic;text-align:center;padding:1rem}
+footer{text-align:center;color:var(--muted);font-size:.75rem;padding:1.5rem;border-top:1px solid var(--border)}
+footer a{color:var(--gold);text-decoration:none}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;padding:1rem;overflow:auto}
+.modal.open{display:block}
+.modal-box{max-width:520px;margin:2rem auto;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:1.4rem}
+#toast{position:fixed;bottom:1rem;right:1rem;background:var(--panel);border:1px solid var(--ok);color:var(--ok);border-radius:10px;padding:.7rem 1.1rem;font-size:.85rem;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">OpenClaw workspace template</div>
+  <h1>FUTURE<span>MEN</span></h1>
+  <p class="sub">A sovereign agent workspace — dashboard, calendar, barometer. Yours to shape.</p>
+</header>
+
+<main>
+  <!-- ============ CALENDAR ============ -->
+  <div class="card">
+    <h2>🗓️ Calendar</h2>
+    <p class="sub">Two clocks: <b>real</b> (wall-clock due dates) and <b>simulation</b> (1 tick = 1 simulated day since the anchor).</p>
+    <div class="row">
+      <button class="btn primary" onclick="openTask()">+ New task</button>
+      <button class="btn" onclick="loadCalendar()">↻ Reload</button>
+      <button class="btn" onclick="exportJson(calendar,'venardi-calendar.json')">⬇ Export JSON</button>
+      <label style="flex:0;margin:0"><input type="file" id="calFile" accept=".json" style="display:none" onchange="importJson(this,'calendar')"><span class="btn" onclick="document.getElementById('calFile').click()">⬆ Import JSON</span></label>
+    </div>
+    <div id="calMeta" class="sub"></div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Status</th><th>Title</th><th>Due</th><th>Mode</th><th></th></tr></thead>
+      <tbody id="calBody"></tbody>
+    </table></div>
+    <div id="calEmpty" class="empty">No tasks yet — add your first one.</div>
+  </div>
+
+  <!-- ============ BAROMETER ============ -->
+  <div class="card">
+    <h2>🌡️ Barometer</h2>
+    <p class="sub">A snapshot of your world: purity, tension, timeline.</p>
+    <div class="grid2">
+      <div>
+        <div style="display:flex;justify-content:space-between;color:var(--dim);font-size:.85rem;margin-bottom:.3rem">
+          <span>Egregore purity</span><span id="purityLabel">—</span>
+        </div>
+        <div class="meter"><div id="purityMeter" style="width:0%"></div></div>
+        <p class="sub" style="margin-top:.8rem"><b>Timeline:</b> <span id="timeline">—</span><br>
+        <b>Tension:</b> <span id="tension">—</span></p>
+      </div>
+      <div>
+        <label>Status</label>
+        <textarea id="baroStatus" placeholder="Current state of your world…"></textarea>
+        <div class="row" style="margin-top:.6rem">
+          <button class="btn primary" onclick="saveBarometer()">💾 Save</button>
+          <button class="btn" onclick="exportJson(barometer,'raven-state.json')">⬇ Export</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MEMORY / NOTES ============ -->
+  <div class="card">
+    <h2>📝 Quick notes</h2>
+    <p class="sub">Scratchpad for today. Kept in your browser (localStorage) — move what matters into <code>memory/YYYY-MM-DD.md</code> and <code>MEMORY.md</code>.</p>
+    <textarea id="notes" placeholder="Notes, decisions, ideas…"></textarea>
+    <div class="row" style="margin-top:.6rem"><button class="btn primary" onclick="saveNotes()">💾 Save notes</button></div>
+  </div>
+
+  <p class="sub" style="text-align:center;margin-top:1.5rem">This dashboard is a starting menu — edit the JSON, wire your own scripts, make it yours.</p>
+</main>
+
+<footer>
+  Futuremen — GNU GPL v2 · <a href="https://github.com/FuturemenHQ/futuremen">github.com/FuturemenHQ/futuremen</a>
+</footer>
+
+<!-- ============ TASK MODAL ============ -->
+<div class="modal" id="taskModal">
+  <div class="modal-box">
+    <h2 style="margin-top:0;color:var(--gold2)">New task</h2>
+    <label>Title</label>
+    <input id="tTitle" placeholder="Task title">
+    <label>Due date (YYYY-MM-DD)</label>
+    <input id="tDate" placeholder="2026-09-01" value="">
+    <label>Mode</label>
+    <select id="tMode">
+      <option value="real">real — wall-clock due date</option>
+      <option value="simulation">simulation — simulated date (1 tick = 1 day)</option>
+    </select>
+    <label>Note (optional)</label>
+    <textarea id="tNote" placeholder="Context…"></textarea>
+    <div class="row" style="margin-top:1rem">
+      <button class="btn primary" onclick="addTask()">Add</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Futuremen dashboard — generic framework front
+   Calendar + barometer + notes. No private data, no team list.
+   Data model mirrors the blank venardi/ templates.
+   ============================================================ */
+
+// ---- Default blank data (same as venardi/ templates) ----
+const DEFAULT_CALENDAR = {
+  "calendar": [],
+  "nextId": 1,
+  "calendarAnchorISO": new Date().toISOString().slice(0,10),
+  "note": "1 tick = 1 day since calendarAnchorISO. mode=real for wall-clock reminders; mode=simulation for simulated dates."
+};
+
+const DEFAULT_BAROMETER = {
+  "timestamp": new Date().toISOString(),
+  "egregorePurity": 0.5,
+  "egregorePercent": 50,
+  "mandelaTension": "Moderate",
+  "divergence": "0%",
+  "timeline": "YOUR_TIMELINE",
+  "dateSimulee": new Date().toISOString().slice(0,10),
+  "ancre": new Date().toISOString().slice(0,10),
+  "barometer": {
+    "dateDebut": "", "dateFin": "", "ticks": 0, "purity": 0.5,
+    "timelineActive": "Your timeline", "lieu": "Your HQ",
+    "personnesSuivies": "—", "statut": "—", "note": "Blank barometer — sync it with your own world."
+  },
+  "sources": [],
+  "_meta": { "source": "your-core.js", "syncedAt": new Date().toISOString() }
+};
+
+let calendar = JSON.parse(JSON.stringify(DEFAULT_CALENDAR));
+let barometer = JSON.parse(JSON.stringify(DEFAULT_BAROMETER));
+
+const LS_CAL = "futuremen_calendar", LS_BARO = "futuremen_barometer", LS_NOTES = "futuremen_notes";
+
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+
+// ---- persistence ----
+function loadAll(){
+  try{const c=localStorage.getItem(LS_CAL); if(c) calendar=JSON.parse(c);}catch(e){}
+  try{const b=localStorage.getItem(LS_BARO); if(b) barometer=JSON.parse(b);}catch(e){}
+  document.getElementById("notes").value = localStorage.getItem(LS_NOTES)||"";
+  renderCalendar(); renderBarometer();
+}
+function saveAll(){ try{localStorage.setItem(LS_CAL,JSON.stringify(calendar));}catch(e){} }
+
+// ---- calendar ----
+function renderCalendar(){
+  const tbody=document.getElementById("calBody");
+  tbody.innerHTML="";
+  document.getElementById("calEmpty").style.display = calendar.calendar.length ? "none" : "block";
+  document.getElementById("calMeta").textContent = "Anchor: " + calendar.calendarAnchorISO + " · " + calendar.calendar.length + " task(s)";
+  calendar.calendar.slice().sort((a,b)=>(a.dateISO||"").localeCompare(b.dateISO||"")).forEach(t=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = "<td><span class='status "+esc(t.status||"pending")+"'>"+esc(t.status||"pending")+"</span></td>"
+      + "<td><b>"+esc(t.title)+"</b>"+(t.note?"<br><span style='color:var(--muted);font-size:.8rem'>"+esc(t.note)+"</span>":"")+"</td>"
+      + "<td>"+esc(t.dateISO||"—")+"</td>"
+      + "<td>"+esc(t.mode||"real")+"</td>"
+      + "<td style='text-align:right'><button class='btn' onclick='toggleTask("+t.id+")'>"+(t.status==="done"?"↩":"✓")+"</button> "
+      + "<button class='btn danger' onclick='delTask("+t.id+")'>✕</button></td>";
+    tbody.appendChild(tr);
+  });
+}
+function openTask(){
+  document.getElementById("taskModal").classList.add("open");
+  document.getElementById("tTitle").value=""; document.getElementById("tDate").value="";
+  document.getElementById("tMode").value="real"; document.getElementById("tNote").value="";
+  document.getElementById("tTitle").focus();
+}
+function closeModal(){document.getElementById("taskModal").classList.remove("open");}
+function addTask(){
+  const title=document.getElementById("tTitle").value.trim();
+  if(!title){toast("Title required");return;}
+  calendar.calendar.push({
+    id: calendar.nextId++,
+    dateISO: document.getElementById("tDate").value || "",
+    title: title,
+    mode: document.getElementById("tMode").value,
+    status: "pending",
+    note: document.getElementById("tNote").value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  saveAll(); renderCalendar(); closeModal(); toast("Task added");
+}
+function toggleTask(id){
+  const t=calendar.calendar.find(x=>x.id===id); if(!t) return;
+  t.status = t.status==="done" ? "pending" : "done";
+  if(t.status==="done") t.completedAt=new Date().toISOString();
+  saveAll(); renderCalendar();
+}
+function delTask(id){
+  calendar.calendar = calendar.calendar.filter(x=>x.id!==id);
+  saveAll(); renderCalendar(); toast("Task removed");
+}
+function loadCalendar(){
+  calendar=JSON.parse(JSON.stringify(DEFAULT_CALENDAR));
+  try{const c=localStorage.getItem(LS_CAL); if(c) calendar=JSON.parse(c);}catch(e){}
+  renderCalendar(); toast("Reloaded");
+}
+
+// ---- barometer ----
+function renderBarometer(){
+  const p=Number(barometer.egregorePurity!=null?barometer.egregorePurity:(barometer.barometer&&barometer.barometer.purity)||0.5);
+  const pct=Math.round(p*100);
+  document.getElementById("purityLabel").textContent=pct+"%";
+  document.getElementById("purityMeter").style.width=Math.min(100,pct)+"%";
+  document.getElementById("timeline").textContent=barometer.timeline||(barometer.barometer&&barometer.barometer.timelineActive)||"—";
+  document.getElementById("tension").textContent=barometer.mandelaTension||"—";
+  document.getElementById("baroStatus").value=(barometer.barometer&&barometer.barometer.statut)||barometer.statut||"";
+}
+function saveBarometer(){
+  barometer.barometer = barometer.barometer||{};
+  barometer.barometer.statut=document.getElementById("baroStatus").value;
+  barometer.barometer.purity=Number(barometer.egregorePurity!=null?barometer.egregorePurity:barometer.barometer.purity);
+  barometer.timestamp=new Date().toISOString();
+  try{localStorage.setItem(LS_BARO,JSON.stringify(barometer));}catch(e){}
+  toast("Barometer saved");
+}
+
+// ---- notes ----
+function saveNotes(){
+  try{localStorage.setItem(LS_NOTES,document.getElementById("notes").value);}catch(e){}
+  toast("Notes saved");
+}
+
+// ---- import / export ----
+function exportJson(obj,filename){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importJson(input,which){
+  const f=input.files&&input.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const data=JSON.parse(rd.result);
+      if(which==="calendar"){calendar=data; if(!calendar.calendar) calendar.calendar=[]; saveAll(); renderCalendar(); toast("Calendar imported");}
+    }catch(e){toast("Invalid JSON");}
+  };
+  rd.readAsText(f);
+  input.value="";
+}
+
+document.addEventListener("DOMContentLoaded",loadAll);
+</script>
+</body>
+</html>
