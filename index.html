@@ -132,10 +132,36 @@ footer a{color:var(--gold);text-decoration:none}
     </div>
   </div>
 
+  <!-- ============ AGENT CHAT ============ -->
+  <div class="card">
+    <h2>💬 Agent Chat</h2>
+    <p class="sub">Talk to your agents with your own LLM key (set in the <b>AI / BYOK</b> panel below). The system prompt is built from the agent's profile.</p>
+    <div class="grid2">
+      <div>
+        <label>Agent</label>
+        <select id="aiAgent" onchange="updateAgentSys()"></select>
+        <label style="margin-top:.6rem">System prompt (auto-built from the agent)</label>
+        <textarea id="aiSys" style="min-height:110px" placeholder="System prompt…"></textarea>
+        <p class="sub" style="margin-top:.4rem">Edit freely — it shapes how the agent responds.</p>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <label>Conversation</label>
+        <div id="aiChat" class="chat" style="flex:1;min-height:200px"></div>
+        <div class="row" style="margin-top:.5rem">
+          <textarea id="aiPrompt" placeholder="Your message to the agent…" style="flex:1;min-height:44px"></textarea>
+          <button class="btn primary" onclick="aiSend()" style="align-self:end">➤</button>
+        </div>
+        <div class="row" style="margin-top:.4rem">
+          <button class="btn" onclick="clearChat()">🗑 Clear conversation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ AI / BYOK ============ -->
   <div class="card">
-    <h2>🤖 AI / BYOK</h2>
-    <p class="sub">Bring your own key — talk to your agents with your own LLM API key. The key stays <b>only in your browser</b> (localStorage), never sent anywhere except your provider.</p>
+    <h2>🔑 AI / BYOK</h2>
+    <p class="sub">Bring your own key — used by the Agent Chat above. The key stays <b>only in your browser</b> (localStorage), never sent anywhere except your provider.</p>
     <div class="grid2">
       <div>
         <label>API key</label>
@@ -160,16 +186,10 @@ footer a{color:var(--gold);text-decoration:none}
         </div>
         <p class="sub" style="margin-top:.6rem">Providers: DeepSeek (<code>https://api.deepseek.com/v1</code>, <code>deepseek-chat</code>) · OpenAI (<code>https://api.openai.com/v1</code>, <code>gpt-4o-mini</code>) · any OpenAI-compatible endpoint.</p>
       </div>
-      <div>
-        <label>Chat with an agent</label>
-        <select id="aiAgent" onchange="updateAgentSys()"></select>
-        <label style="margin-top:.6rem">System prompt (auto-built from the agent)</label>
-        <textarea id="aiSys" style="min-height:70px" placeholder="System prompt…"></textarea>
-        <div id="aiChat" class="chat" style="margin-top:.6rem"></div>
-        <div class="row" style="margin-top:.5rem">
-          <textarea id="aiPrompt" placeholder="Your message to the agent…" style="flex:1;min-height:44px"></textarea>
-          <button class="btn primary" onclick="aiSend()" style="align-self:end">➤</button>
-        </div>
+      <div style="align-self:start">
+        <label>How it works</label>
+        <p class="sub" style="margin-top:.3rem">1. Add your agents in the <b>🤖 Agents</b> panel.<br>2. Set your API key here.<br>3. Chat in the <b>💬 Agent Chat</b> panel — the system prompt is auto-built from the selected agent (name, role, category, status, note).</p>
+        <p class="sub">No key? The dashboard still works fully for agents, calendar, barometer and notes. Or use any OpenAI-compatible endpoint.</p>
       </div>
     </div>
   </div>
@@ -490,6 +510,11 @@ function renderChat(){
     box.appendChild(d);
   });
   box.scrollTop=box.scrollHeight;
+}
+function clearChat(){
+  chatHist=[];
+  try{localStorage.removeItem(LS_CHAT);}catch(e){}
+  renderChat(); toast("Conversation cleared");
 }
 function loadAi(){
   let cfg={base:"https://api.deepseek.com/v1",model:"deepseek-chat",key:""};
